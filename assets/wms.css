@@ -49,6 +49,15 @@
   --r-float:10px;   /* 弹窗、抽屉、下拉 */
   --r-pill:999px;   /* 仅用于胶囊徽标与开关 */
 
+  /* 滚动条：默认值跟随 graphite，其余主题在 themes.css 覆盖。
+     不定义的话浏览器会画出粗灰条，在夜航深色里尤其刺眼。 */
+  --scroll-thumb:#CBD5E1;        /* 滑块常态 */
+  --scroll-thumb-hover:#94A3B8;  /* 悬停加深一档 */
+  --scroll-thumb-active:#64748B; /* 拖拽中 */
+  --scroll-track:transparent;    /* 轨道，深色主题可用实体色划出凹槽 */
+  --scroll-w:10px;               /* 滚动条占位宽度 */
+  --r-scroll:var(--r-ctl);       /* 滑块圆角：惰性求值，自动跟随当前主题的控件圆角 */
+
   /* 动效：只允许 100 / 150ms 两档，全部只动 opacity / background / transform(≤4px) */
   --dur-fast:100ms;   /* hover、行选中、切页签 */
   --dur-base:150ms;   /* 弹层进出、状态切换 */
@@ -777,4 +786,45 @@ th.sortable[aria-sort="descending"]::after{content:"↓";opacity:1;color:var(--a
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* ============================================================
+   滚动条 —— 跟随主题
+   ------------------------------------------------------------
+   此前全站没有任何滚动条样式，浏览器默认的粗灰条在夜航深色里
+   几乎是一条白缝。
+
+   两条渲染路径必须分开写，混在一起会互相废掉：
+   - Chromium 只要在元素上声明过 scrollbar-width（哪怕 auto），就会
+     整体忽略 ::-webkit-scrollbar 系列，圆角 / hover / 去箭头全失效。
+     故 Chromium 路径只写伪元素，绝不出现 scrollbar-width。
+   - Firefox 不认 ::-webkit-scrollbar，只能用 scrollbar-width +
+     scrollbar-color，故放进 @-moz-document 内；该 at-rule 在
+     Chromium 中被整体跳过，两边互不干扰。
+
+   颜色与圆角全部取自主题变量，切主题时无需再改这里。
+   ============================================================ */
+::-webkit-scrollbar{width:var(--scroll-w);height:var(--scroll-w)}
+::-webkit-scrollbar-track{background:var(--scroll-track)}
+::-webkit-scrollbar-thumb{
+  background-color:var(--scroll-thumb);
+  border:2px solid transparent;      /* 轨道留边，滑块才显细 */
+  background-clip:padding-box;
+  border-radius:var(--r-scroll);
+}
+::-webkit-scrollbar-thumb:hover{background-color:var(--scroll-thumb-hover)}
+::-webkit-scrollbar-thumb:active{background-color:var(--scroll-thumb-active)}
+::-webkit-scrollbar-corner{background:var(--scroll-track)}
+/* 去掉两端的上下箭头按钮：Windows 上最突兀的一块 */
+::-webkit-scrollbar-button{display:none;width:0;height:0}
+
+/* 侧栏在四套主题里都是深色底，全局滑块色落到上面会看不清。
+   选择器加 html 抬高特异性，压过上方的 :hover 规则。 */
+html .sidebar::-webkit-scrollbar-thumb{background-color:rgba(255,255,255,.24)}
+html .sidebar::-webkit-scrollbar-thumb:hover{background-color:rgba(255,255,255,.42)}
+
+/* ---- Firefox 路径：Chromium 会跳过整个 @-moz-document 块 ---- */
+@-moz-document url-prefix(){
+  *{scrollbar-width:thin;scrollbar-color:var(--scroll-thumb) var(--scroll-track)}
+  html .sidebar{scrollbar-color:rgba(255,255,255,.24) transparent}
 }
