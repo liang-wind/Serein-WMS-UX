@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/wms.css">
+<link rel="stylesheet" href="../assets/wms.css">
+<link rel="stylesheet" href="../assets/themes.css">
 </head>
 <body data-page="locations" data-wh-col="1">
 <a class="skip-link" href="#main">跳转到主要内容</a>
@@ -161,11 +162,11 @@
         </div>
 
         <p class="map-legend">
-          <span><i style="background:var(--color-success)"></i>满载</span>
-          <span><i style="background:var(--color-warning)"></i>部分占用</span>
-          <span><i style="background:#E2E5E9"></i>空闲</span>
-          <span><i style="background:var(--color-info)"></i>盘点锁定</span>
-          <span><i style="background:var(--color-danger)"></i>故障冻结</span>
+          <span><i style="background:var(--heat-full)"></i>满载</span>
+          <span><i style="background:var(--heat-part)"></i>部分占用</span>
+          <span><i style="background:var(--heat-free)"></i>空闲</span>
+          <span><i style="background:var(--heat-lock)"></i>盘点锁定</span>
+          <span><i style="background:var(--bad)"></i>故障冻结</span>
         </p>
       </section>
 
@@ -212,10 +213,10 @@
   </div>
 </div>
 
-<script src="assets/shell.js"></script>
-<script src="assets/ui.js"></script>
-<script src="assets/data.js"></script>
-<script src="assets/app.js"></script>
-<script src="assets/actions.js"></script>
+<script src="../assets/shell.js"></script>
+<script src="../assets/ui.js"></script>
+<script src="../assets/data.js"></script>
+<script src="../assets/app.js"></script>
+<script src="../assets/actions.js"></script>
 </body>
 </html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RF 作业终端 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/wms.css">
+<link rel="stylesheet" href="../assets/themes.css">
+<style>
+/* PDA 专用样式 · 仅本页使用
+   触控优先：目标高度 ≥48px，与桌面端 36px 行高刻意区分
+   全部颜色走主题 token，四个主题下都能正确呈现 */
+.pda-layout{display:grid;grid-template-columns:352px 1fr;gap:var(--grid-gap);align-items:start}
+.pda{
+  width:352px;background:var(--pda-bezel,#0F172A);border-radius:26px;padding:12px 10px;
+  box-shadow:var(--pda-bezel-shadow);
+}
+.pda-screen{
+  background:var(--surface-0);border-radius:18px;overflow:hidden;
+  display:flex;flex-direction:column;min-height:600px;
+}
+.pda-bar{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--surface-2);color:var(--ink-2);font-size:11px;
+  border-bottom:1px solid var(--line-1);
+}
+.pda-bar b{color:var(--ink-1);font-weight:600}
+.pda-bar .sig{margin-left:auto;display:flex;align-items:center;gap:5px;font-family:'Fira Code',monospace}
+.pda-bar .sig i{width:6px;height:6px;border-radius:50%;background:var(--ok);display:block}
+.pda-body{padding:12px;display:flex;flex-direction:column;gap:10px;flex:1}
+.pda-h{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0}
+.pda-card{border:1px solid var(--line-1);border-radius:var(--r-ctl);padding:12px;background:var(--surface-2)}
+.pda-card .ttl{font-weight:600;font-size:13px;margin:0 0 4px;color:var(--ink-1)}
+.pda-card .meta{font-size:11.5px;color:var(--ink-2);margin:0;line-height:1.6}
+.pda-step{display:flex;align-items:center;gap:7px;font-size:12px;padding:7px 10px;border-radius:var(--r-ctl);border:1px solid var(--line-1);background:var(--surface-0);color:var(--ink-1)}
+.pda-step .n{width:18px;height:18px;border-radius:50%;background:var(--surface-3);color:var(--ink-2);display:grid;place-items:center;font-size:10px;font-family:'Fira Code',monospace;flex-shrink:0}
+/* 当前步骤：主强调色描边 + 浅色底 */
+.pda-step.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-strong);font-weight:600}
+.pda-step.on .n{background:var(--accent);color:var(--switch-knob,#FFFFFF)}
+.pda-step.ok .n{background:var(--ok);color:var(--switch-knob,#FFFFFF)}
+.pda-step.ok{color:var(--ink-2)}
+.pda-scan{
+  border:1px dashed var(--line-2);border-radius:var(--r-ctl);padding:10px 12px;
+  font-family:'Fira Code',monospace;font-size:12px;color:var(--ink-1);
+  background:var(--surface-0);min-height:60px;display:flex;align-items:center;word-break:break-all;
+}
+.pda-scan .ph{color:var(--ink-3);font-family:'Fira Sans',sans-serif}
+.pda-key{
+  min-height:48px;border-radius:var(--r-ctl);border:1px solid var(--line-2);
+  background:var(--surface-0);font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-1);
+  display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  transition:background var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease);
+}
+.pda-key:hover{background:var(--surface-2);border-color:var(--line-3)}
+.pda-key:active{transform:scale(.985)}
+.pda-key.primary{background:var(--accent);color:var(--switch-knob,#FFFFFF);border-color:var(--accent-strong);font-weight:600}
+.pda-key.primary:hover{background:var(--accent-strong)}
+.pda-key.ghost{background:transparent}
+.pda-key svg{width:16px;height:16px}
+.pda-keys{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pda-log{font-size:11px;font-family:'Fira Code',monospace;color:var(--ink-2);line-height:1.8;max-height:104px;overflow-y:auto;margin:0;padding-left:14px}
+.pda-foot{padding:8px 12px;border-top:1px solid var(--line-1);font-size:10.5px;color:var(--ink-2);display:flex;gap:8px}
+@media (max-width:1024px){.pda-layout{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body data-page="pda">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">RF 作业终端<span>收货 · 上架 · 拣货 · 盘点 · 无纸化执行层</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="作业终端关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">在岗作业员</div>
+            <div class="kpi-value num">12</div>
+            <div class="kpi-delta">PDA 在线 <b>11</b> · 离线 <b class="down">1</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">今日完成任务</div>
+            <div class="kpi-value num" id="kpi-done">1,864</div>
+            <div class="kpi-delta">平均 <b class="up">↑ 6.2%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">单件平均耗时</div>
+            <div class="kpi-value num">42<span class="unit">秒</span></div>
+            <div class="kpi-delta">目标 45 秒 · 优于目标</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">异常上报</div>
+            <div class="kpi-value num text-warning">14</div>
+            <div class="kpi-delta">库位不符 6 · 货权不符 3 · 破损 5</div>
+          </article>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-wh">作业仓库</label>
+          <select id="f-wh" class="ctl"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-task">任务类型</label>
+          <select id="f-task" class="ctl" data-filter-col="1"><option>全部</option><option>上架</option><option>拣货</option><option>移库</option><option>盘点</option><option>退件收货</option></select>
+        </div>
+        <div class="field">
+          <label for="f-op">作业员</label>
+          <select id="f-op" class="ctl"><option>全部</option><option>Serein</option><option>赵小雨</option><option>钱大力</option></select>
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-toast="已向 11 台在线 PDA 推送任务刷新指令" data-toast-type="success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          刷新任务
+        </button>
+      </div>
+
+      <div class="pda-layout">
+        <!-- PDA 模拟 -->
+        <div class="pda" role="group" aria-label="RF 手持终端模拟 · PDA-03">
+          <div class="pda-screen">
+            <div class="pda-bar">
+              <b>LAX-01</b><span>·</span><span>Serein</span>
+              <span class="sig num"><i aria-hidden="true"></i>PDA-03 · 在线</span>
+            </div>
+
+            <div class="pda-body">
+              <p class="pda-h" id="pda-task-h">当前任务 · 上架</p>
+
+              <div class="pda-card">
+                <p class="ttl" id="pda-card-ttl">ASN-20261011-0142 · 第 219 箱</p>
+                <p class="meta" id="pda-card-meta">货主 深圳致远电子 · SKU-88231<br>待上架 <b class="num">12</b> 件 · 批次 B2604-0912</p>
+              </div>
+
+              <p class="pda-h" id="pda-steps-h">作业步骤</p>
+              <div id="pda-steps" role="list" aria-labelledby="pda-steps-h">
+                <div class="pda-step on" data-s="0" role="listitem" aria-label="第 1 步，扫描目标库位，进行中"><span class="n" aria-hidden="true">1</span>扫描目标库位</div>
+                <div class="pda-step" data-s="1" role="listitem" aria-label="第 2 步，扫描商品条码，未开始"><span class="n" aria-hidden="true">2</span>扫描商品条码</div>
+                <div class="pda-step" data-s="2" role="listitem" aria-label="第 3 步，核对数量与批次，未开始"><span class="n" aria-hidden="true">3</span>核对数量与批次</div>
+                <div class="pda-step" data-s="3" role="listitem" aria-label="第 4 步，提交上架，未开始"><span class="n" aria-hidden="true">4</span>提交上架</div>
+              </div>
+
+              <p class="pda-h" id="pda-scan-h">扫码结果</p>
+              <div class="pda-scan" id="pda-scan" role="status" aria-live="polite" aria-labelledby="pda-scan-h"><span class="ph">等待扫码…</span></div>
+
+              <div class="pda-keys">
+                <!-- data-manual：这两个按钮由本页脚本接管反馈，跳过 ui.js 的兜底 toast -->
+                <button class="pda-key primary" type="button" id="pda-act" aria-label="模拟扫码" data-manual>模拟扫码</button>
+                <button class="pda-key ghost" type="button" id="pda-exc" aria-label="上报异常" data-manual>异常上报</button>
+              </div>
+
+              <p class="pda-h" id="pda-log-h">作业日志</p>
+              <ul class="pda-log" id="pda-log" aria-labelledby="pda-log-h">
+                <li>09:12 PDA-03 登录 · Serein</li>
+                <li>09:14 领取上架任务 PT-20261011-0186</li>
+              </ul>
+            </div>
+
+            <div class="pda-foot">
+              <span>已同步 <b class="num" id="pda-sync">12</b> 条</span><span style="flex:1"></span><span>电量 78%</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <!-- 待办队列 -->
+          <section class="card" aria-labelledby="h-todo">
+            <div class="section-head">
+              <h2 id="h-todo">我的待办任务</h2>
+              <span class="hint">PDA-03 · 演示数据</span>
+            </div>
+            <div class="table-wrap" style="margin-top:4px">
+              <table>
+                <caption class="skip-link">我的待办任务列表</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">任务号</th>
+                    <th scope="col">类型</th>
+                    <th scope="col">目标</th>
+                    <th scope="col">件数</th>
+                    <th scope="col">优先级</th>
+                    <th scope="col">操作</th>
+                  </tr>
+                </thead>
+                <tbody data-render="pda"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 作业规范 -->
+          <section class="card" aria-labelledby="h-std">
+            <div class="section-head">
+              <h2 id="h-std">扫码校验与拦截规则</h2>
+              <span class="hint">PDA 端强制</span>
+            </div>
+            <div class="check-list" style="margin-top:4px">
+              <div class="check">
+                <input type="checkbox" id="r1" checked>
+                <div class="check-body">
+                  <label class="check-title" for="r1">库位扫码不符即拦截</label>
+                  <div class="check-help">扫描库位与任务目标不一致时禁止提交</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="r2" checked>
+                <div class="check-body">
+                  <label class="check-title" for="r2">货主条码校验</label>
+                  <div class="check-help">防止跨货主串货 · 混放库位必检</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="r3" checked>
+                <div class="check-body">
+                  <label class="check-title" for="r3">批次效期校验（FEFO）</label>
+                  <div class="check-help">拣货与上架强制按最早到期日匹配</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="r4">
+                <div class="check-body">
+                  <label class="check-title" for="r4">称重复核</label>
+                  <div class="check-help">打包后称重与预估重量偏差 &gt;15% 时拦截</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 人效 -->
+          <section class="card" aria-labelledby="h-kpi">
+            <div class="section-head">
+              <h2 id="h-kpi">今日人效</h2>
+              <span class="hint">Bullet Chart · 实际 vs 目标</span>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">Serein</span>
+                <span class="bullet-code num">上架 214</span>
+                <span class="bullet-pct">112%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="Serein 人效达成 112%，超过目标">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:98%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">赵小雨</span>
+                <span class="bullet-code num">拣货 486</span>
+                <span class="bullet-pct">104%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="赵小雨 人效达成 104%，超过目标">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:95%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">钱大力</span>
+                <span class="bullet-code num">移库 96</span>
+                <span class="bullet-pct text-warning">78%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="钱大力 人效达成 78%，低于目标">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:78%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <p class="bullet-legend">
+              <span><i style="background:var(--range-good);width:90%"></i>≥95% 达标</span>
+              <span><i style="background:var(--range-mid)"></i>临界</span>
+              <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>目标 95%</span>
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <div class="note-box" style="margin-top:12px">RF 作业是本系统此前完全缺失的执行层：桌面端只做到“下发任务”，实际收货、上架、拣货、盘点全部发生在手持终端。此处为可交互模拟——点「模拟扫码」按任务类型走完作业步骤，最后一步会回写来源单据（ASN / 出库单 / 退件单）；点「领取下一任务」会按优先级从右侧队列取下一条待领取任务，与队列表格的状态实时联动。</div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../assets/shell.js"></script>
+<script src="../assets/ui.js"></script>
+<script src="../assets/data.js"></script>
+<script src="../assets/app.js"></script>
+<script src="../assets/actions.js"></script>
+
+<script>
+/* PDA 作业终端 · 页面级脚本，仅本页使用
+   左侧手持屏接入任务引擎 WMS.DB.pda：
+   「领取下一任务」按优先级（高→中→低）从右侧待办队列取下一条 todo →
+   调 WMS.act('pda', id, 'claim')（置为进行中 + 重渲染队列 + toast）→
+   按任务类型推进作业步骤 → 最后一步调 finish（回写 ASN / 出库单 / 退件单）。
+   资源脚本在上方加载，故初始化推迟到 DOMContentLoaded（在 actions.js 的 boot 之后执行）。 */
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var scan = $('pda-scan'), act = $('pda-act'), exc = $('pda-exc'), log = $('pda-log');
+  var stepsBox = $('pda-steps'), taskH = $('pda-task-h');
+  var cardTtl = $('pda-card-ttl'), cardMeta = $('pda-card-meta');
+  var kpiDone = $('kpi-done'), syncN = $('pda-sync');
+
+  var PRIO = { '高': 0, '中': 1, '低': 2 };
+  var current = null;   /* 当前手持屏上的任务记录（WMS.DB.pda 中的一条） */
+  var step = 0;
+
+  /* 每种任务类型的作业步骤模板；value(r) 由任务记录渲染成扫码回显文案 */
+  var FLOWS = {
+    '上架': [
+      { label: '扫描目标库位', value: function (r) { return r.target + ' · 库位码校验通过'; } },
+      { label: '扫描商品条码', value: function () { return 'SKU-88231 · 货主条码校验通过'; } },
+      { label: '核对数量与批次', value: function (r) { return r.qty + ' 件 · 批次 B2604-0912 · FEFO 通过'; } },
+      { label: '提交上架', value: function () { return '上架成功 · 库存流水已写入'; } }
+    ],
+    '拣货': [
+      { label: '扫描拣货位', value: function (r) { return r.target + ' · 拣货位校验通过'; } },
+      { label: '扫描商品条码', value: function () { return 'SKU-88231 · 与波次明细一致'; } },
+      { label: '核对数量', value: function (r) { return r.qty + ' 件 · FEFO 最早批次'; } },
+      { label: '提交拣货', value: function () { return '拣货完成 · 已转打包队列'; } }
+    ],
+    '移库': [
+      { label: '扫描源库位', value: function (r) { return moveFrom(r) + ' · 源库位校验通过'; } },
+      { label: '扫描目标库位', value: function (r) { return moveTo(r) + ' · 目标库位可用'; } },
+      { label: '扫描商品条码', value: function () { return 'SKU-88231 · 数量与批次一致'; } },
+      { label: '提交移库', value: function () { return '移库已登记 · 库位变更待确认'; } }
+    ],
+    '盘点': [
+      { label: '扫描库位', value: function (r) { return r.target + ' · 循环盘点清单匹配'; } },
+      { label: '扫描商品条码', value: function () { return 'SKU-88231 · 账面数已拉取'; } },
+      { label: '录入实盘数量', value: function (r) { return r.qty + ' 个库位 · 实盘与账面一致'; } },
+      { label: '提交盘点', value: function () { return '盘点完成 · 无差异'; } }
+    ],
+    '退件收货': [
+      { label: '扫描月台', value: function (r) { return r.target + ' · 月台校验通过'; } },
+      { label: '扫描退件单号', value: function (r) { return r.doc + ' · 退件单已匹配'; } },
+      { label: '核对数量与状态', value: function (r) { return r.qty + ' 件 · 外包装完好'; } },
+      { label: '提交收货', value: function () { return '退件已收货 · 转质检'; } }
+    ]
+  };
+
+  function esc(s) { return (window.WMS && WMS.esc) ? WMS.esc(s) : String(s); }
+  function moveFrom(r) { return String(r.target).split('→')[0].trim(); }
+  function moveTo(r) { return String(r.target).split('→')[1].trim(); }
+  function prioOf(r) { return PRIO[r.prio] === undefined ? 2 : PRIO[r.prio]; }
+  function flowOf(r) { return FLOWS[r.type] || FLOWS['上架']; }
+
+  function hhmm() {
+    var d = new Date(), p = function (n) { return n < 10 ? '0' + n : n; };
+    return p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function addLog(html) {
+    log.insertAdjacentHTML('beforeend', '<li>' + hhmm() + ' ' + html + '</li>');
+    log.scrollTop = log.scrollHeight;
+    if (syncN) syncN.textContent = parseInt(syncN.textContent, 10) + 1;
+  }
+
+  /* ---------- 屏幕渲染 ---------- */
+  function renderSteps() {
+    var defs = current ? flowOf(current) : [];
+    var html = [];
+    defs.forEach(function (d, i) {
+      var cls = i === step ? ' on' : (i < step ? ' ok' : '');
+      var word = i === step ? '进行中' : (i < step ? '已完成' : '未开始');
+      html.push('<div class="pda-step' + cls + '" role="listitem" aria-label="第 ' + (i + 1) +
+        ' 步，' + d.label + '，' + word + '"><span class="n" aria-hidden="true">' + (i + 1) + '</span>' + d.label + '</div>');
+    });
+    stepsBox.innerHTML = html.join('');
+  }
+
+  function renderCard() {
+    if (!current) {
+      taskH.textContent = '当前任务 · 空闲';
+      cardTtl.textContent = '暂无进行中任务';
+      cardMeta.innerHTML = '点击下方「领取任务」从待办队列领取';
+      act.textContent = '领取任务';
+      return;
+    }
+    var r = current, defs = flowOf(r);
+    taskH.textContent = '当前任务 · ' + esc(r.type);
+    cardTtl.textContent = esc(r.id) + ' · ' + esc(r.type);
+    cardMeta.innerHTML = '单据 ' + esc(r.doc) + ' · 目标 ' + esc(r.target) + '<br>' +
+      '数量 <b class="num">' + esc(r.qty) + '</b> · 优先级 ' + esc(r.prio) + ' · PDA-03';
+    if (step >= defs.length) act.textContent = '领取下一任务';
+    else if (step === defs.length - 1) act.textContent = '提交' + r.type;
+    else act.textContent = '模拟扫码';
+  }
+
+  function toIdle() {
+    current = null; step = 0;
+    scan.innerHTML = '<span class="ph">等待扫码…</span>';
+    renderSteps(); renderCard();
+  }
+
+  function loadTask(r) {
+    current = r; step = 0;
+    scan.innerHTML = '<span class="ph">等待扫码…</span>';
+    renderSteps(); renderCard();
+  }
+
+  /* ---------- 领取下一任务：按优先级取队列首条待领取 ---------- */
+  function claimNext() {
+    var pool = (WMS.DB.pda || []).filter(function (r) { return r.status === 'todo'; });
+    if (!pool.length) {
+      WMS.toast('队列中已没有待领取的任务', 'warn');
+      toIdle();
+      return;
+    }
+    pool.sort(function (a, b) { return prioOf(a) - prioOf(b); });
+    var r = pool[0];
+    WMS.act('pda', r.id, 'claim');   /* 引擎：置为进行中 + 重渲染队列 + toast */
+    loadTask(r);
+    addLog('领取' + r.type + '任务 ' + r.id);
+  }
+
+  /* ---------- 扫码推进 ---------- */
+  act.addEventListener('click', function () {
+    if (!window.WMS || !WMS.DB) { WMS.toast('数据层未加载，请刷新页面重试', 'warn'); return; }
+    if (!current || step >= flowOf(current).length) { claimNext(); return; }
+    var defs = flowOf(current), d = defs[step];
+    scan.textContent = d.value(current);
+    addLog(d.label + ' · ' + d.value(current).split(' · ')[0]);
+    step++;
+    if (step >= defs.length) {
+      renderSteps(); renderCard();
+      var r = current;
+      /* 引擎 finish：按任务类型回写来源单据并 toast 结果 */
+      WMS.act('pda', r.id, 'finish');
+      if (kpiDone) {
+        var n = parseInt(String(kpiDone.textContent).replace(/,/g, ''), 10) + 1;
+        kpiDone.textContent = String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+      return;
+    }
+    renderSteps(); renderCard();
+  });
+
+  /* ---------- 异常上报：任务退回待办队列，屏幕回到空闲 ---------- */
+  exc.addEventListener('click', function () {
+    if (!window.wmsConfirm || !window.WMS) return;
+    if (!current) { WMS.toast('当前没有进行中的任务', 'warn'); return; }
+    var r = current;
+    wmsConfirm({
+      title: '上报异常',
+      desc: '<b>' + esc(r.id) + '（' + esc(r.type) + '）</b> — 上报后该任务将退回待办队列并通知仓库主管，需主管处理后才能重新领取。',
+      ok: '上报异常',
+      danger: true,
+      onOk: function () {
+        r.status = 'todo'; r.device = '—'; r.owner = '—';
+        r.note = '异常上报 · 待主管处理';
+        WMS.save(); WMS.renderAll();
+        addLog('异常上报 · 任务 ' + r.id + ' 已退回待办');
+        WMS.toast('异常已上报 · ' + r.id + ' 已退回待办队列', 'warn');
+        toIdle();
+      }
+    });
+  });
+
+  /* ---------- 与右侧队列表格联动：
+     在表格里点「领取」→ 该任务推到手持屏；对当前任务点「完成」→ 屏幕回到空闲 ---------- */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-action^="pda:"]') : null;
+    if (!b) return;
+    var spec = b.getAttribute('data-action').split(':');   /* pda:<id>:<key> */
+    var r = WMS.find('pda', spec[1]);
+    if (!r) return;
+    if (spec[2] === 'claim') { loadTask(r); addLog('从队列领取 ' + r.type + '任务 ' + r.id); }
+    else if (spec[2] === 'finish' && current && current.id === r.id) toIdle();
+  });
+
+  /* ---------- 初始化：屏幕显示引擎里进行中的任务，没有则空闲 ---------- */
+  document.addEventListener('DOMContentLoaded', function () {
+    var doing = (WMS.DB.pda || []).filter(function (r) { return r.status === 'doing'; })[0];
+    if (doing) loadTask(doing); else toIdle();
+  });
+})();
+</script>
+</body>
+</html>

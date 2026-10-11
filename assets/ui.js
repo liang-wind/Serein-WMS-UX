@@ -339,11 +339,19 @@
     var toastBtn = t.closest ? t.closest('[data-toast]') : null;
     if (toastBtn) { toast(toastBtn.getAttribute('data-toast'), toastBtn.getAttribute('data-toast-type') || ''); return; }
 
-    /* --- 兜底：普通按钮（跳过交互引擎托管的按钮） --- */
+    /* --- 兜底：普通按钮（跳过交互引擎托管的按钮） ---
+       data-manual            = 页面脚本自行接管反馈（如 pda.html 的模拟扫码）
+       data-x                 = 弹窗内的取消/确认/增删行按钮（ui.js / actions.js 各弹窗自管）
+       data-theme-btn         = 主题切换（shell.js 已 toast）
+       data-notify-* / data-menu-a = 通知面板与用户菜单项（actions.js 已 toast） */
     var ENGINE_ATTRS = ['data-action', 'data-drawer', 'data-print', 'data-close-drawer',
-                        'data-export', 'data-form', 'data-list', 'data-notify-toggle', 'data-menu-toggle'];
+                        'data-export', 'data-form', 'data-list', 'data-notify-toggle', 'data-menu-toggle',
+                        'data-manual', 'data-x', 'data-theme-btn',
+                        'data-notify-readall', 'data-notify-i', 'data-menu-a'];
     var btn = t.closest ? t.closest('button, [role="button"]') : null;
-    if (btn && !btn.disabled && !btn.classList.contains('tab') && !btn.hasAttribute('data-reset')) {
+    /* 弹窗 / 下拉面板内部的按钮一律不补兜底 toast，避免与弹窗自身反馈叠加 */
+    var inOverlay = btn && (btn.closest('.modal-backdrop') || btn.closest('.menu'));
+    if (btn && !inOverlay && !btn.disabled && !btn.classList.contains('tab') && !btn.hasAttribute('data-reset')) {
       var isEngine = false;
       for (var ei = 0; ei < ENGINE_ATTRS.length; ei++) {
         if (btn.hasAttribute(ENGINE_ATTRS[ei])) { isEngine = true; break; }

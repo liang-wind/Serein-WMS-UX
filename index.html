@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/wms.css">
+<link rel="stylesheet" href="assets/themes.css">
 </head>
 <body data-page="overview" data-wh-col="2">
 <a class="skip-link" href="#main">跳转到主要内容</a>
@@ -24,38 +25,39 @@
     <main id="main" class="content">
 
       <!-- ---- KPI ---- -->
-      <section aria-label="今日关键指标">
+      <section aria-label="关键指标">
         <div class="kpi-grid">
           <article class="card kpi">
-            <div class="kpi-label">今日入库箱数</div>
-            <div class="kpi-value num">1,284<span class="unit">箱</span></div>
-            <div class="kpi-delta"><b>42</b> 单 · 较昨日 <b class="up">↑ 12.4%</b></div>
+            <div class="kpi-label">入库总量（在流程）</div>
+            <div class="kpi-value num" data-kpi="scale:asn.box*1" data-kpi-suffix="<span class=&quot;unit&quot;>箱</span>"></div>
+            <div class="kpi-delta" data-kpi-delta="asn.mode">ASN 待入库 · 按当前单据汇总</div>
           </article>
 
           <article class="card kpi">
-            <div class="kpi-label">今日出库箱数</div>
-            <div class="kpi-value num">3,572<span class="unit">箱</span></div>
-            <div class="kpi-delta"><b>214</b> 单 · 较昨日 <b class="up">↑ 6.8%</b></div>
+            <div class="kpi-label">出库件数（在流程）</div>
+            <div class="kpi-value num" data-kpi="scale:out.pieces*1" data-kpi-suffix="<span class=&quot;unit&quot;>件</span>"></div>
+            <div class="kpi-delta" data-kpi="total:out" data-kpi-suffix=" 张出库单在流程中">出库单在流程中</div>
           </article>
 
           <article class="card kpi">
             <div class="kpi-label">在库 SKU</div>
-            <div class="kpi-value num">12,847</div>
-            <div class="kpi-delta">总库存量 <b>286.4万</b> 件 · 覆盖 <b>18</b> 家货主</div>
+            <div class="kpi-value num" data-kpi="total:sku" data-kpi-suffix="<span class=&quot;unit&quot;>个</span>"></div>
+            <div class="kpi-delta">库存合计 <b data-kpi="sum:sku.avail" data-kpi-suffix=" 件">0 件</b> · 覆盖 <b data-kpi="total:tenant" data-kpi-suffix=" 家货主">0 家货主</b></div>
           </article>
 
           <article class="card kpi">
-            <div class="kpi-label">库容利用率</div>
-            <div class="kpi-value num">78.4<span class="unit">%</span></div>
-            <div class="kpi-delta">目标 85% · <b class="down">↓ 2.1%</b></div>
+            <div class="kpi-label">平均库容水位</div>
+            <div class="kpi-value num" data-kpi="avg:wh.fill" data-kpi-suffix="<span class=&quot;unit&quot;>%</span>"></div>
+            <div class="kpi-delta">目标 85% · <b class="down">实时计算</b></div>
           </article>
 
           <article class="card kpi">
-            <div class="kpi-label">待处理异常</div>
-            <div class="kpi-value num text-danger">23</div>
-            <div class="kpi-delta">高优 <b class="down">5</b> · 今日新增 <b>8</b></div>
+            <div class="kpi-label">未读预警</div>
+            <div class="kpi-value num text-danger" data-kpi="count:notify.read.false"></div>
+            <div class="kpi-delta" data-kpi-delta="notify.lv">按当前通知汇总</div>
           </article>
         </div>
+        <p class="hint" style="margin:6px 0 0">以上均由 `WMS.DB` 实时计算（非写死值）· 演示数据样本量较小，数值以当前单据与库存为准</p>
       </section>
 
       <!-- ---- 库容 + 异常 ---- -->
@@ -64,7 +66,7 @@
           <div class="section-head">
             <h2 id="h-cap">各仓库容水位</h2>
             <span class="hint">Bullet Chart · 实测值 vs 目标 85%</span>
-            <a class="more" href="locations.html">查看库位明细</a>
+            <a class="more" href="operations/locations.html">查看库位明细</a>
           </div>
 
           <div class="bullet-item">
@@ -139,55 +141,10 @@
         <section class="card" aria-labelledby="h-alert">
           <div class="section-head">
             <h2 id="h-alert">异常预警</h2>
-            <span class="hint num">23</span>
-            <a class="more" href="orders.html">全部</a>
+            <span class="hint num" data-kpi="total:notify"></span>
+            <a class="more" href="operations/orders.html">全部</a>
           </div>
-          <div class="alert-list">
-            <div class="alert sev-high">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-              <div class="alert-body">
-                <div class="alert-title">SKU-88231 低于安全库存</div>
-                <div class="alert-meta">深圳致远电子 · 美西 LAX-01 · 剩余 12 / 安全线 50</div>
-              </div>
-              <span class="alert-time">4m</span>
-            </div>
-
-            <div class="alert sev-high">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-              <div class="alert-body">
-                <div class="alert-title">BHX-03 库容超限 91.6%</div>
-                <div class="alert-meta">已触发扩容预警 · 建议分流至 EWR-02</div>
-              </div>
-              <span class="alert-time">21m</span>
-            </div>
-
-            <div class="alert sev-mid">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              <div class="alert-body">
-                <div class="alert-title">IN-20261010-0031 收货超时</div>
-                <div class="alert-meta">宁波海诚日用 · 已到货 18h 未上架 · 卡在验收环节</div>
-              </div>
-              <span class="alert-time">1h</span>
-            </div>
-
-            <div class="alert sev-mid">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              <div class="alert-body">
-                <div class="alert-title">3 个运单承运商扫描停滞</div>
-                <div class="alert-meta">UPS · 逾 24h 无轨迹更新</div>
-              </div>
-              <span class="alert-time">3h</span>
-            </div>
-
-            <div class="alert sev-low">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16h.01"/><path d="M12 8v4"/><path d="M15.31 2a2 2 0 0 1 1.42.6l4.07 4.07a2 2 0 0 1 1.42.6H19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6.09a2 2 0 0 1 .6-1.42L7.7 2.6a2 2 0 0 1 1.42-.6z"/></svg>
-              <div class="alert-body">
-                <div class="alert-title">FRA-04 有 6 张盘点差异单待复核</div>
-                <div class="alert-meta">差异合计 148 件 · 需主管审批</div>
-              </div>
-              <span class="alert-time">5h</span>
-            </div>
-          </div>
+          <div class="alert-list" data-render="notify"></div>
         </section>
       </div>
 
@@ -196,7 +153,7 @@
         <section class="card" aria-labelledby="h-in">
           <div class="section-head">
             <h2 id="h-in">最近入库单</h2>
-            <a class="more" href="inbound.html">全部 42</a>
+            <a class="more" href="operations/inbound.html">全部 <span data-kpi="total:asn"></span></a>
           </div>
           <div class="table-wrap">
             <table>
@@ -216,7 +173,7 @@
         <section class="card" aria-labelledby="h-out">
           <div class="section-head">
             <h2 id="h-out">最近出库单</h2>
-            <a class="more" href="outbound.html">全部 214</a>
+            <a class="more" href="operations/outbound.html">全部 <span data-kpi="total:out"></span></a>
           </div>
           <div class="table-wrap">
             <table>

@@ -121,11 +121,11 @@
       timeline: [
         { t: '10-10 16:10', title: '退件到仓', meta: 'FBA 移除单 36 件 · 全部残损', state: 'done' },
         { t: '10-10 17:30', title: '报废申请已提交', meta: '刘主管 · 待货主确认', state: 'done' },
-        { t: '10-10 17:32', title: '进入审批中心排队', meta: '等待 陈工 审批 · SLA 24h', state: 'active' }
+        { t: '10-10 17:32', title: '进入审批中心排队', meta: '等待 Serein 审批 · SLA 24h', state: 'active' }
       ],
       audit: [
         { t: '10-10 17:30', op: '刘主管', act: '提交申请', detail: '退件报废确认 · SKU-11708 × 36 件 · -$284.40' },
-        { t: '10-10 17:32', op: '系统', act: '进入待办', detail: '分配审批人 陈工 · 关联退件单 RTN-20261011-0192 置为待确认' }
+        { t: '10-10 17:32', op: '系统', act: '进入待办', detail: '分配审批人 Serein · 关联退件单 RTN-20261011-0192 置为待确认' }
       ]
     },
     {
@@ -139,11 +139,11 @@
       timeline: [
         { t: '10-11 09:58', title: '盘点快照锁定', meta: 'D-02-09 · 88 件转入 quarantine', state: 'done' },
         { t: '10-11 16:50', title: '实盘复核完成', meta: '盘亏 12 件 · 待审批', state: 'done' },
-        { t: '10-11 17:12', title: '进入审批中心排队', meta: '等待 陈工 审批 · SLA 24h', state: 'active' }
+        { t: '10-11 17:12', title: '进入审批中心排队', meta: '等待 Serein 审批 · SLA 24h', state: 'active' }
       ],
       audit: [
         { t: '10-11 16:50', op: '王运营', act: '提交申请', detail: '盘点差异调整 · SKU-33478 × -12 件 · -$33.12' },
-        { t: '10-11 17:12', op: '系统', act: '进入待办', detail: '分配审批人 陈工 · 库位 D-02-09 保持锁定' }
+        { t: '10-11 17:12', op: '系统', act: '进入待办', detail: '分配审批人 Serein · 库位 D-02-09 保持锁定' }
       ]
     },
     {
@@ -151,17 +151,17 @@
       doc: 'CN-20261011-015', loc: 'A-03-12', tenant: '深圳致远电子', wh: 'LAX-01',
       sku: 'SKU-88231', qty: 3, amt: 10.26,
       applicant: '刘主管', at: '10-11 07:52', status: 'approved',
-      decidedBy: '陈工', decidedAt: '10-11 08:40',
+      decidedBy: 'Serein', decidedAt: '10-11 08:40',
       reason: 'A 区动态盘点复盘，A-03-12 盘盈 3 件（上架错记），审批后加回可用库存。',
       note: '已于 10-11 08:40 通过，可用库存加回 3 件，当前 12 件已含本次盘盈。',
       timeline: [
         { t: '10-11 07:40', title: '动态盘点开始', meta: 'A 区 · 12 个库位', state: 'done' },
         { t: '10-11 07:52', title: '差异单已提交', meta: '盘盈 3 件 · 待审批', state: 'done' },
-        { t: '10-11 08:40', title: '审批通过', meta: '陈工 · 可用库存 +3 件', state: 'done' }
+        { t: '10-11 08:40', title: '审批通过', meta: 'Serein · 可用库存 +3 件', state: 'done' }
       ],
       audit: [
         { t: '10-11 07:52', op: '刘主管', act: '提交申请', detail: '盘点差异调整 · SKU-88231 × +3 件 · +$10.26' },
-        { t: '10-11 08:40', op: '陈工', act: '通过', detail: '落库：可用库存 9 → 12 件，库位 A-03-12 解锁' }
+        { t: '10-11 08:40', op: 'Serein', act: '通过', detail: '落库：可用库存 9 → 12 件，库位 A-03-12 解锁' }
       ]
     },
     {
@@ -175,11 +175,11 @@
       timeline: [
         { t: '10-11 12:05', title: '破损登记', meta: 'A-03-12 · 2 件外壳破裂', state: 'done' },
         { t: '10-11 12:13', title: '调整单已提交', meta: '刘主管 · 待审批', state: 'done' },
-        { t: '10-11 12:13', title: '进入审批中心排队', meta: '等待 陈工 审批 · SLA 24h', state: 'active' }
+        { t: '10-11 12:13', title: '进入审批中心排队', meta: '等待 Serein 审批 · SLA 24h', state: 'active' }
       ],
       audit: [
         { t: '10-11 12:13', op: '刘主管', act: '提交申请', detail: '库存调整单 · SKU-88231 × -2 件 · -$6.84' },
-        { t: '10-11 12:13', op: '系统', act: '进入待办', detail: '分配审批人 陈工 · 关联调整单 ADJ-20261011-0067' }
+        { t: '10-11 12:13', op: '系统', act: '进入待办', detail: '分配审批人 Serein · 关联调整单 ADJ-20261011-0067' }
       ]
     },
     {
@@ -187,17 +187,17 @@
       doc: 'ADJ-20261010-0031', tenant: '深圳致远电子', wh: 'LAX-01',
       sku: 'SKU-44122', qty: -2, amt: -4.20,
       applicant: '刘主管', at: '10-10 14:05', status: 'approved',
-      decidedBy: '陈工', decidedAt: '10-10 15:44',
+      decidedBy: 'Serein', decidedAt: '10-10 15:44',
       reason: '盘点少货 2 件，申请按盘点差异扣减可用库存（对应流水 LG-20261010-00705）。',
       note: '已于 10-10 15:44 通过，SKU-44122 可用库存 64 → 62 件，流水已写入。',
       timeline: [
         { t: '10-10 14:05', title: '调整单已提交', meta: '刘主管 · 盘点少货 2 件', state: 'done' },
-        { t: '10-10 15:44', title: '审批通过', meta: '陈工 · 可用库存 -2 件', state: 'done' },
+        { t: '10-10 15:44', title: '审批通过', meta: 'Serein · 可用库存 -2 件', state: 'done' },
         { t: '10-10 15:44', title: '库存流水已写入', meta: 'LG-20261010-00705 · ADJUST', state: 'done' }
       ],
       audit: [
         { t: '10-10 14:05', op: '刘主管', act: '提交申请', detail: '库存调整单 · SKU-44122 × -2 件 · -$4.20' },
-        { t: '10-10 15:44', op: '陈工', act: '通过', detail: '落库：可用库存 64 → 62 件，写入库存流水' }
+        { t: '10-10 15:44', op: 'Serein', act: '通过', detail: '落库：可用库存 64 → 62 件，写入库存流水' }
       ]
     },
     {
@@ -211,11 +211,11 @@
       timeline: [
         { t: '10-10 23:40', title: '账单差异已标记', meta: 'INV-202610-0038 · +$3,060', state: 'done' },
         { t: '10-10 23:52', title: '差异调整已提交', meta: '王运营 · 待审批', state: 'done' },
-        { t: '10-10 23:52', title: '进入审批中心排队', meta: '等待 陈工 审批 · SLA 24h', state: 'active' }
+        { t: '10-10 23:52', title: '进入审批中心排队', meta: '等待 Serein 审批 · SLA 24h', state: 'active' }
       ],
       audit: [
         { t: '10-10 23:52', op: '王运营', act: '提交申请', detail: '账单差异调整 · INV-202610-0038 · +$3,060.00' },
-        { t: '10-10 23:52', op: '系统', act: '进入待办', detail: '分配审批人 陈工 · 账单保持差异态' }
+        { t: '10-10 23:52', op: '系统', act: '进入待办', detail: '分配审批人 Serein · 账单保持差异态' }
       ]
     },
     {
@@ -223,35 +223,35 @@
       doc: 'INV-202610-0035', tenant: '安克创新科技', wh: 'LAX-01',
       sku: '—', qty: 0, amt: 340,
       applicant: '王运营', at: '10-11 06:30', status: 'approved',
-      decidedBy: '陈工', decidedAt: '10-11 08:05',
+      decidedBy: 'Serein', decidedAt: '10-11 08:05',
       reason: '货主确认金额少 340 美元（入库操作费分段口径），申请按系统金额入账。',
       note: '已于 10-11 08:05 通过，账单确认金额改为 $18,940、差异清零并转入对账中。',
       timeline: [
         { t: '10-11 06:30', title: '差异调整已提交', meta: '王运营 · 差 $340', state: 'done' },
-        { t: '10-11 08:05', title: '审批通过', meta: '陈工 · 按系统金额入账', state: 'done' },
+        { t: '10-11 08:05', title: '审批通过', meta: 'Serein · 按系统金额入账', state: 'done' },
         { t: '10-11 08:05', title: '账单转入对账', meta: 'INV-202610-0035 · 差异 $0', state: 'done' }
       ],
       audit: [
         { t: '10-11 06:30', op: '王运营', act: '提交申请', detail: '账单差异调整 · INV-202610-0035 · +$340.00' },
-        { t: '10-11 08:05', op: '陈工', act: '通过', detail: '落库：确认金额 $18,940 · 差异清零 · 转入对账中' }
+        { t: '10-11 08:05', op: 'Serein', act: '通过', detail: '落库：确认金额 $18,940 · 差异清零 · 转入对账中' }
       ]
     },
     {
       id: 'AP-20261011-0006', type: '仓库停用', effect: 'wh-pause',
       doc: 'BHX-03', target: 'BHX-03', tenant: '—', wh: 'BHX-03',
       sku: '—', qty: 0, amt: null,
-      applicant: '陈工', at: '10-11 15:35',
+      applicant: 'Serein', at: '10-11 15:35',
       reason: 'BHX-03 库容 91.6% 超限，申请 10-15 起停用 5 天加装高层货架；停用期间在库库存冻结、未完成作业继续执行。',
       note: '停用未通过前仓库保持运营中，ASN 与出库单照常下发。',
       status: 'pending',
       timeline: [
         { t: '10-11 15:20', title: '扩容预警触发', meta: 'BHX-03 · 库容 91.6%', state: 'done' },
-        { t: '10-11 15:35', title: '停用申请已提交', meta: '陈工 · 10-15 起停用 5 天', state: 'done' },
-        { t: '10-11 15:35', title: '进入审批中心排队', meta: '等待 陈工 审批 · SLA 24h', state: 'active' }
+        { t: '10-11 15:35', title: '停用申请已提交', meta: 'Serein · 10-15 起停用 5 天', state: 'done' },
+        { t: '10-11 15:35', title: '进入审批中心排队', meta: '等待 Serein 审批 · SLA 24h', state: 'active' }
       ],
       audit: [
-        { t: '10-11 15:35', op: '陈工', act: '提交申请', detail: '仓库停用 · BHX-03 · 停用 5 天扩容整改' },
-        { t: '10-11 15:35', op: '系统', act: '进入待办', detail: '分配审批人 陈工 · 仓库保持运营中' }
+        { t: '10-11 15:35', op: 'Serein', act: '提交申请', detail: '仓库停用 · BHX-03 · 停用 5 天扩容整改' },
+        { t: '10-11 15:35', op: '系统', act: '进入待办', detail: '分配审批人 Serein · 仓库保持运营中' }
       ]
     },
     {
@@ -259,17 +259,17 @@
       doc: 'LAX-01', target: 'LAX-01', tenant: '—', wh: 'LAX-01',
       sku: '—', qty: 0, amt: null,
       applicant: '王运营', at: '10-11 08:40', status: 'rejected',
-      decidedBy: '陈工', decidedAt: '10-11 09:12',
+      decidedBy: 'Serein', decidedAt: '10-11 09:12',
       reason: '申请 10-20 停用 LAX-01 更换消防管线 1 天，被驳回：主力仓且货权集中度最高，停用影响面过大。',
       note: '已于 10-11 09:12 驳回，LAX-01 保持运营中，可改为分时分区施工后重新提交。',
       timeline: [
         { t: '10-11 08:40', title: '停用申请已提交', meta: '王运营 · 消防管线更换', state: 'done' },
-        { t: '10-11 09:12', title: '审批驳回', meta: '陈工 · 影响面过大', state: 'error' },
+        { t: '10-11 09:12', title: '审批驳回', meta: 'Serein · 影响面过大', state: 'error' },
         { t: '10-11 09:12', title: '仓库恢复运营', meta: 'LAX-01 · 无需回滚', state: 'done' }
       ],
       audit: [
         { t: '10-11 08:40', op: '王运营', act: '提交申请', detail: '仓库停用 · LAX-01 · 停用 1 天' },
-        { t: '10-11 09:12', op: '陈工', act: '驳回', detail: '回滚：LAX-01 恢复运营中 · 驳回理由已通知申请人' }
+        { t: '10-11 09:12', op: 'Serein', act: '驳回', detail: '回滚：LAX-01 恢复运营中 · 驳回理由已通知申请人' }
       ]
     }
   ];
@@ -360,7 +360,7 @@
       id: 'LG-' + stamp + '-' + tail, t: WMS.now(), wh: s.wh, tenant: tenant || s.supplier,
       sku: s.id, name: s.name, lot: '—', loc: s.loc,
       qty: qty, dir: qty > 0 ? 'IN' : 'OUT', from: 'on_hand', to: 'on_hand',
-      docType: docType, doc: doc, line: 1, op: '陈工', device: 'WEB',
+      docType: docType, doc: doc, line: 1, op: 'Serein', device: 'WEB',
       balance: Math.max(0, bal + qty), note: note
     });
   }
@@ -371,7 +371,14 @@
       /* 退件报废：通过扣库存并关单；驳回退回待换标 */
       var ret = WMS.find('ret', r.doc), s = WMS.find('sku', r.sku);
       if (pass) {
-        if (s) { s.avail = Math.max(0, s.avail - r.qty); WMS.skuStatus(s); }
+        if (s) {
+          WMS.stockMove({
+            sku: s, qty: -r.qty, kind: 'adjust',
+            tenant: r.tenant, wh: r.wh, doc: r.id, docType: 'ADJUST',
+            op: '审批人', device: 'WEB',
+            note: '退件报废审批通过，扣减可用 ' + r.qty + ' 件'
+          });
+        }
         if (ret) {
           ret.status = 'done';
           ret.note = r.qty + ' 件报废已通过审批，可用库存已扣减，退件单关闭。';
@@ -404,7 +411,14 @@
           task = WMS.find('countTask', r.doc);
       var diff = (r.qty > 0 ? '盘盈 ' : '盘亏 ') + Math.abs(r.qty) + ' 件';
       if (pass) {
-        if (sku) { sku.avail = Math.max(0, sku.avail + r.qty); WMS.skuStatus(sku); }
+        if (sku) {
+          WMS.stockMove({
+            sku: sku, qty: r.qty, kind: 'adjust',
+            tenant: r.tenant, wh: r.wh, doc: r.id, docType: 'COUNT',
+            op: '审批人', device: 'WEB',
+            note: '盘点差异审批通过，' + diff + '（审批单 ' + r.id + '）'
+          });
+        }
         if (loc) {
           loc.status = 'part';
           loc.note = '盘点差异已审批入账，库位已解锁（' + diff + '）。';
@@ -427,7 +441,12 @@
       var s2 = WMS.find('sku', r.sku);
       if (pass && s2) {
         var before = s2.avail;
-        s2.avail = Math.max(0, s2.avail + r.qty);
+        WMS.stockMove({
+          sku: s2, qty: r.qty, kind: 'adjust',
+          tenant: r.tenant, wh: r.wh, doc: r.id, docType: 'ADJUST',
+          op: '审批人', device: 'WEB',
+          note: '库存调整单 ' + r.doc + ' 审批通过'
+        });
         WMS.skuStatus(s2);
         s2.note = '库存调整单 ' + r.doc + ' 已通过审批：' + (r.qty > 0 ? '+' : '') + r.qty +
                   ' 件（' + WMS.num(before) + ' → ' + WMS.num(s2.avail) + '）。';
@@ -475,14 +494,14 @@
   /* 统一决策入口：改状态 → 落库/回滚 → 留痕 */
   function decide(r, pass) {
     r.status = pass ? 'approved' : 'rejected';
-    r.decidedBy = '陈工';
+    r.decidedBy = 'Serein';
     r.decidedAt = WMS.now();
     runEffect(r, pass);
     WMS.push(r, pass ? '审批通过' : '审批驳回',
              (pass ? '已落库' : '已回滚') + ' · ' + typeOf(r).label, pass ? 'done' : 'error');
     r.audit = r.audit || [];
     r.audit.unshift({
-      t: r.decidedAt, op: '陈工', act: pass ? '通过' : '驳回',
+      t: r.decidedAt, op: 'Serein', act: pass ? '通过' : '驳回',
       detail: (pass ? '落库：' : '回滚：') + effectDesc(r, pass)
     });
   }
@@ -563,7 +582,7 @@
     add('申请时间', r.at);
     add('等待时长', r.status === 'pending' ? fmtDur(waitMinOf(r)) : '—');
     add('处理时长', r.decidedAt ? fmtDur(procMinOf(r)) : '—');
-    add('审批人', WMS.esc(r.decidedBy || '待分配（默认 陈工）'));
+    add('审批人', WMS.esc(r.decidedBy || '待分配（默认 Serein）'));
     add('决定时间', r.decidedAt || '—');
     add('提交端', 'WEB · 海外仓 WMS');
   };

@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/wms.css">
+<link rel="stylesheet" href="../assets/wms.css">
+<link rel="stylesheet" href="../assets/themes.css">
 </head>
 <body data-page="ledger">
 <a class="skip-link" href="#main">跳转到主要内容</a>
@@ -158,35 +159,35 @@
             <div class="step done">
               <span class="step-dot" aria-hidden="true">✓</span>
               <div class="step-body">
-                <div class="step-title">待收 in_dock</div>
+                <div class="step-title">卸货中 in_dock</div>
                 <div class="step-meta">已扫码收货、在月台 · 由 ASN 收货触发</div>
               </div>
             </div>
             <div class="step done">
               <span class="step-dot" aria-hidden="true">✓</span>
               <div class="step-body">
-                <div class="step-title">待检 inspecting</div>
-                <div class="step-meta">质检中 · 上架前强制质检开关控制是否停留</div>
+                <div class="step-title">质检中 inspecting</div>
+                <div class="step-meta">上架前强制质检开关控制是否停留</div>
               </div>
             </div>
             <div class="step active">
               <span class="step-dot" aria-hidden="true">4</span>
               <div class="step-body">
-                <div class="step-title">在库可用 on_hand</div>
+                <div class="step-title">在库 on_hand</div>
                 <div class="step-meta">上架入位后生效 · 唯一计入可用的状态</div>
               </div>
             </div>
             <div class="step">
               <span class="step-dot" aria-hidden="true">5</span>
               <div class="step-body">
-                <div class="step-title">已分配 allocated → 已拣 picked → 已打包 packed → 已发运 shipped</div>
+                <div class="step-title">已分配 allocated → 已拣货 picked → 已打包 packed → 已发运 shipped</div>
                 <div class="step-meta">订单预占起，四段流转后货物离仓</div>
               </div>
             </div>
             <div class="step">
               <span class="step-dot" aria-hidden="true">6</span>
               <div class="step-body">
-                <div class="step-title">异常支路 damaged / quarantined</div>
+                <div class="step-title">异常支路 已破损 damaged / 隔离中 quarantined</div>
                 <div class="step-meta">残损与隔离/盘点锁定 · 均不可用，需处置后才能回到主链路</div>
               </div>
             </div>
@@ -243,7 +244,7 @@
               </thead>
               <tbody>
                 <tr>
-                  <td class="td-strong">在库可用 on_hand</td>
+                  <td class="td-strong">在库 on_hand</td>
                   <td class="text-success">是</td>
                   <td class="td-num">2,684,120</td>
                   <td class="td-num">93.7%</td>
@@ -255,13 +256,13 @@
                   <td class="td-num">3.9%</td>
                 </tr>
                 <tr>
-                  <td class="td-strong">待检 inspecting</td>
+                  <td class="td-strong">质检中 inspecting</td>
                   <td class="text-danger">否</td>
                   <td class="td-num">24,860</td>
                   <td class="td-num">0.9%</td>
                 </tr>
                 <tr>
-                  <td class="td-strong">残损 / 隔离</td>
+                  <td class="td-strong">已破损 damaged / 隔离中 quarantined</td>
                   <td class="text-danger">否</td>
                   <td class="td-num">42,540</td>
                   <td class="td-num">1.5%</td>
@@ -272,16 +273,16 @@
         </section>
       </div>
 
-      <div class="note-box">本页是 `docs/03-待修复清单.md` 中 G1/G2 缺口的落地：此前系统只有 `avail / lock` 两个数字，无流水、无状态机，导致无法对账、无法追溯、无法做财务口径库存。现在一切库存变化都必须由单据驱动写入流水，余额是流水的计算结果。</div>
+      <div class="note-box">库存的每一次变化都会写入一条流水，当前库存数量 = 流水重算结果。任何库存数字都必须能由流水重算出来，禁止直接修改余额。</div>
 
     </main>
   </div>
 </div>
 
-<script src="assets/data.js"></script>
-<script src="assets/shell.js"></script>
-<script src="assets/ui.js"></script>
-<script src="assets/app.js"></script>
-<script src="assets/actions.js"></script>
+<script src="../assets/data.js"></script>
+<script src="../assets/shell.js"></script>
+<script src="../assets/ui.js"></script>
+<script src="../assets/app.js"></script>
+<script src="../assets/actions.js"></script>
 </body>
 </html>

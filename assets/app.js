@@ -263,13 +263,31 @@ WMS.RENDER.ledger = function (r) {
     '<td class="td-num">' + WMS.esc(r.lot) + '</td>' +
     '<td class="td-num">' + WMS.esc(r.loc) + '</td>' +
     '<td class="' + qtyCls + ' td-num td-strong">' + qtyTxt + '</td>' +
-    '<td class="td-num" style="font-size:11.5px">' + WMS.esc(r.from) + ' <span class="text-muted">→</span> ' + WMS.esc(r.to) + '</td>' +
+    '<td>' + WMS.statusText('stock', r.from) + ' <span class="text-muted">→</span> ' + WMS.statusText('stock', r.to) + '</td>' +
     '<td class="td-num">' + r.docType + '</td>' +
     '<td><button class="td-link td-num" type="button" data-drawer="' + r.docType.toLowerCase() + ':' + r.doc + '">' + WMS.esc(r.doc) + '</button></td>' +
     '<td>' + WMS.esc(r.op) + '</td>' +
     '<td class="td-num">' + r.device + '</td>' +
     '<td class="td-num td-strong">' + WMS.num(r.balance) + '</td>' +
   '</tr>';
+};
+
+/* ---------- 通知 / 异常预警 ---------- */
+WMS.RENDER.notify = function (r) {
+  var sev = r.lv === 'high' ? 'sev-high' : (r.lv === 'mid' ? 'sev-mid' : 'sev-low');
+  var icon = r.lv === 'high'
+    ? '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>'
+    : (r.lv === 'mid'
+      ? '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+      : '<path d="M12 16h.01"/><path d="M12 8v4"/>');
+  return '<div class="alert ' + sev + '">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + icon + '</svg>' +
+    '<div class="alert-body">' +
+      '<div class="alert-title">' + WMS.esc(r.title) + (r.read ? '' : ' <span class="badge b-err" style="font-size:10px;padding:0 4px">未读</span>') + '</div>' +
+      '<div class="alert-meta">' + WMS.esc(r.sub) + '</div>' +
+    '</div>' +
+    '<span class="alert-time">' + WMS.esc(r.time) + '</span>' +
+  '</div>';
 };
 
 /* 总览页的精简行（入库 / 出库） */
@@ -298,6 +316,7 @@ WMS.RENDER.outMini = function (r) {
 WMS.OPS = {
   asn: [
     {k:'arrive', t:'登记到货', on:['booked']},
+    {k:'items', t:'明细',     on:['booked','receiving','inspecting','putaway']},
     {k:'recv',   t:'收货',     on:['receiving']},
     {k:'inspect',t:'验收',     on:['inspecting']},
     {k:'putaway',t:'上架',     on:['putaway']},
@@ -379,12 +398,16 @@ WMS.OPS = {
   ledger: [
     {k:'view',    t:'详情',   on:['IN','OUT','ADJ']},
     {k:'trace',   t:'追溯单据', on:['IN','OUT','ADJ']}
+  ],
+  notify: [
+    {k:'go', t:'去处理', on:['high','mid','low']}
   ]
 };
 
 WMS.ops = function (kind, r, overrideLabel) {
   var defs = WMS.OPS[kind] || [];
-  var html = '<button class="btn-link" type="button" data-drawer="' + kind + ':' + r.id + '">详情</button>';
+  /* 通知等无主键实体不生成"详情"按钮 */
+  var html = (kind === 'notify') ? '' : '<button class="btn-link" type="button" data-drawer="' + kind + ':' + r.id + '">详情</button>';
   for (var i = 0; i < defs.length; i++) {
     var d = defs[i];
     if (d.on.indexOf(r.status) === -1) continue;
@@ -404,8 +427,13 @@ WMS.renderAll = function () {
     var limit = parseInt(tb.getAttribute('data-limit') || '0', 10);
     if (limit > 0 && rows.length > limit) rows = rows.slice(0, limit);
     var fn = WMS.RENDER[kind] || WMS.RENDER[src];
+    /* 非表格容器（如 alert-list 的 div）不套 <tr> */
+    var isTable = tb.tagName === 'TBODY' || tb.tagName === 'TABLE';
+    var emptyHTML = isTable
+      ? '<tr class="no-result"><td colspan="20"><div class="empty"><p>暂无数据</p></div></td></tr>'
+      : '<div class="empty"><p>暂无数据</p></div>';
     if (!rows.length || !fn) {
-      tb.innerHTML = '<tr class="no-result"><td colspan="20"><div class="empty"><p>暂无数据</p></div></td></tr>';
+      tb.innerHTML = emptyHTML;
       return;
     }
     var out = [];

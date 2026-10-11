@@ -91,6 +91,23 @@
     }
     WMS.skuStatus(sku);
 
+    /* ---- 计费事件（FIX-05）：每次作业产生一笔待计费 ---- */
+    if (WMS.DB.billEvent) {
+      var item = null, unit = 0;
+      if (kind === 'putaway')       { item = '入库操作费'; unit = 0.45; }
+      else if (kind === 'handover') { item = '出库操作费'; unit = 0.38; }
+      else if (kind === 'ret-in')   { item = '退件重新上架'; unit = 0.30; }
+      else if (kind === 'adjust')   { item = '库存调整'; unit = 0; }
+      if (item) {
+        WMS.DB.billEvent.push({
+          id: WMS.nextId('BE-' + WMS.now().slice(0, 5) + '-', 'billEvent'),
+          t: WMS.now(), tenant: tenant, item: item,
+          qty: qty, unit: unit, amount: Math.round(qty * unit * 100) / 100,
+          docType: opt.docType || 'MANUAL', doc: opt.doc || '—', settled: false
+        });
+      }
+    }
+
     if (WMS.DB.ledger) {
       var dir = (kind === 'handover') ? 'OUT' : (kind === 'adjust' ? 'ADJ' : 'IN');
       WMS.DB.ledger.unshift({
@@ -428,12 +445,27 @@
       var v = '';
       if (op === 'count') {
         var q = arg.split('.');
-        v = WMS.num((WMS.DB[q[0]] || []).filter(function (r) { return r.status === q[1]; }).length);
+        var field = q[1] || 'status';
+        var val = q[2];
+        v = WMS.num((WMS.DB[q[0]] || []).filter(function (r) {
+          return val === undefined ? true : String(r[field]) === val;
+        }).length);
       } else if (op === 'sum') {
         var q2 = arg.split('.');
         v = WMS.num((WMS.DB[q2[0]] || []).reduce(function (a, r) { return a + (Number(r[q2[1]]) || 0); }, 0));
+      } else if (op === 'avg') {
+        var q3 = arg.split('.');
+        var arr = WMS.DB[q3[0]] || [];
+        v = arr.length ? (arr.reduce(function (a, r) { return a + (Number(r[q3[1]]) || 0); }, 0) / arr.length).toFixed(1) : '0';
       } else if (op === 'total') {
         v = WMS.num((WMS.DB[arg] || []).length);
+      } else if (op === 'scale') {
+        /* scale:table.field*factor —— 演示数据样本量小，
+           用系数放大到接近真实业务的量级（仅演示环境使用） */
+        var q4 = arg.split('*');
+        var q5 = q4[0].split('.');
+        var base = (WMS.DB[q5[0]] || []).reduce(function (a, r) { return a + (Number(r[q5[1]]) || 0); }, 0);
+        v = WMS.num(Math.round(base * (Number(q4[1]) || 1)));
       }
       if (v !== '') el.innerHTML = v + (el.getAttribute('data-kpi-suffix') || '');
 
@@ -527,7 +559,7 @@
     panel.setAttribute('data-kind', 'menu');
     panel.setAttribute('role', 'menu');
     panel.style.width = '220px';
-    panel.innerHTML = '<div class="menu-head">陈工 · 仓库主管</div>' +
+    panel.innerHTML = '<div class="menu-head">Serein · 仓库主管</div>' +
       '<button class="menu-item" type="button" role="menuitem" data-menu-a="profile"><span class="m-title">个人资料与偏好</span></button>' +
       '<button class="menu-item" type="button" role="menuitem" data-menu-a="audit"><span class="m-title">我的操作日志</span></button>' +
       '<button class="menu-item" type="button" role="menuitem" data-menu-a="reset"><span class="m-title">重置演示数据</span><span class="m-sub" style="display:block">恢复初始状态</span></button>' +
@@ -543,6 +575,7 @@
 
   /* ---- 入库 ASN ---- */
   WMS.ACTIONS.asn = {
+    items: function (r) { WMS.itemEditor(r); return { msg: null }; },
     arrive: function (r) {
       r.status = 'receiving';
       WMS.push(r, '车辆已到仓', r.dock + ' · 已登记到货', 'done');
@@ -567,22 +600,26 @@
     putaway: function (r) {
       r.status = 'done';
       WMS.push(r, '全部上架', '已完成 ' + r.box + ' / ' + r.box + ' 箱', 'done');
-      var added = 0, skipped = [];
+      var added = 0, boxes = 0, skipped = [];
       (r.items || []).forEach(function (it) {
         var s = WMS.find('sku', it.sku);
         if (!s) { skipped.push(it.sku + '（无此 SKU）'); return; }
         if (s.wh !== r.wh) { skipped.push(it.sku + '（仓库不符）'); return; }
+        /* FIX-03：箱数 → 件数换算。ASN items[].qty 单位是箱，
+           库存 avail 按件计量，必须乘以箱规 unitsPerBox。 */
+        var upb = s.unitsPerBox || 1;
+        var pieces = it.qty * upb;
         var res = WMS.stockMove({
-          sku: s, qty: it.qty, kind: 'putaway',
+          sku: s, qty: pieces, kind: 'putaway',
           tenant: r.tenant || r.supplier, lot: it.lot, loc: s.loc, wh: r.wh,
-          doc: r.id, docType: 'ASN', op: '陈工', device: 'WEB',
-          note: 'ASN ' + r.id + ' 上架入账 ' + it.qty + ' 件'
+          doc: r.id, docType: 'ASN', op: 'Serein', device: 'WEB',
+          note: 'ASN ' + r.id + ' 上架：' + it.qty + ' 箱 × 箱规 ' + upb + ' = ' + pieces + ' 件'
         });
-        if (res.ok) { s.lastIn = WMS.now(); added += it.qty; }
+        if (res.ok) { s.lastIn = WMS.now(); added += pieces; boxes += it.qty; }
         else skipped.push(it.sku + '（' + res.msg + '）');
       });
       if (!(r.items || []).length) return { msg: r.id + ' 无商品明细，无法入账 · 请先添加明细行' };
-      var m = r.id + ' 已完成上架 · 入账 ' + WMS.num(added) + ' 件可用库存';
+      var m = r.id + ' 已完成上架 · 收货 ' + boxes + ' 箱 / 入账 ' + WMS.num(added) + ' 件可用库存（箱数已按箱规换算为件数）';
       if (skipped.length) m += ' · 跳过 ' + skipped.length + ' 项：' + skipped.join('、');
       return { msg: m };
     },
@@ -608,9 +645,12 @@
     },
     release: function (r) {
       var q = r.lock;
-      r.avail += q; r.lock = 0;
-      WMS.skuStatus(r);
-      return { msg: r.id + ' 已释放锁定 ' + WMS.num(q) + ' 件' };
+      if (q <= 0) return { msg: r.id + ' 无锁定库存可释放', type: 'warn' };
+      /* 模型 A：锁定转可用，总在库量不变 */
+      WMS.stockMove({ sku: r, qty: q, kind: 'release',
+        doc: 'RL-' + WMS.now().slice(0, 5), docType: 'RELEASE',
+        op: '仓库主管', device: 'WEB', note: '释放订单预占 ' + q + ' 件' });
+      return { msg: r.id + ' 已释放锁定 ' + WMS.num(q) + ' 件 · 可用 ' + WMS.num(r.avail) };
     },
     promo: function (r) {
       r.status = 'ok';
@@ -629,7 +669,7 @@
         ],
         onSubmit: function (v) {
           var before = r.avail;
-          var res = WMS.stockMove({
+          WMS.stockMove({
             sku: r, qty: Number(v.delta), kind: 'adjust',
             doc: 'ADJ-' + WMS.now().slice(0, 5), docType: 'ADJUST',
             op: '仓库主管', device: 'WEB',
@@ -637,8 +677,8 @@
           });
           r.note = '库存调整：' + v.reason + ' ' + (v.delta > 0 ? '+' : '') + v.delta + ' 件（' +
             WMS.num(before) + ' → ' + WMS.num(r.avail) + '）' + (v.memo ? ' · ' + v.memo : '');
-          if (res.ok) WMS.toast('调整已写入库存流水 · 可用 ' + WMS.num(before) + ' → ' + WMS.num(r.avail), 'success');
-          return { msg: r.id + ' 调整完成 · ' + WMS.num(before) + ' → ' + WMS.num(r.avail) + ' 件' };
+          /* 反馈统一由 formModal 用返回的 msg 弹出，此处不再自行 toast，避免双重提示 */
+          return { msg: r.id + ' 调整完成 · 已写入库存流水 · 可用 ' + WMS.num(before) + ' → ' + WMS.num(r.avail) + ' 件' };
         }
       });
       return { msg: null };
@@ -752,7 +792,7 @@
       r.note = '循环盘点中（任务 ' + WMS.nextId('CN-20261011-', 'countTask') + '），盘点完成前不可上架。';
       WMS.DB.countTask.unshift({
         id: WMS.nextId('CN-20261011-', 'countTask'), wh: r.wh, zone: r.zone,
-        mode: '循环盘点', diff: '—', owner: '陈工', status: '进行中', due: '10-11 22:00'
+        mode: '循环盘点', diff: '—', owner: 'Serein', status: '进行中', due: '10-11 22:00'
       });
       return { msg: r.id + ' 已下架盘点任务 · 状态锁定' };
     }
@@ -949,7 +989,7 @@
       var tag = 'X00' + Math.random().toString(36).slice(2, 6).toUpperCase();
       WMS.DB.retn.unshift({
         id: id, src: r.id, tenant: r.tenant, sku: r.sku, qty: r.qty, act: '换标',
-        tag: tag, owner: '陈工', status: 'printing', wh: r.wh,
+        tag: tag, owner: 'Serein', status: 'printing', wh: r.wh,
         note: '新 FNSKU ' + tag + ' 已生成，' + r.qty + ' 张标签待打印。'
       });
       r.status = 'refurb';
@@ -994,7 +1034,14 @@
       r.status = 'done';
       r.note = '已上架完成，' + r.qty + ' 件计入可用库存。';
       var s = WMS.find('sku', r.sku);
-      if (s) { s.avail += r.qty; WMS.skuStatus(s); }
+      if (s) {
+        WMS.stockMove({
+          sku: s, qty: r.qty, kind: 'ret-in',
+          tenant: r.tenant, lot: r.lot, loc: s.loc, wh: r.wh,
+          doc: r.id, docType: 'RETURN', op: r.owner || '仓库主管', device: 'PDA',
+          note: r.id + '「' + r.act + '」完成 · 重新上架 ' + r.qty + ' 件'
+        });
+      }
       WMS.linkRet(r.src, 'done', r.qty + ' 件已完成「' + r.act + '」并重新上架');
       return { msg: r.id + ' 上架完成 · ' + r.qty + ' 件计入可用库存' };
     },
@@ -1105,14 +1152,37 @@
     claim: function (r) {
       r.status = 'doing';
       r.device = 'PDA-03';
-      r.owner = '陈工';
+      r.owner = 'Serein';
       r.note = '已由 PDA-03 领取 · ' + WMS.now();
       return { msg: r.id + ' 已领取 · 下发至 PDA-03' };
     },
     finish: function (r) {
       r.status = 'done';
-      r.note = '已于 ' + WMS.now() + ' 完成作业。';
-      return { msg: r.id + ' 作业已完成 · 绩效已采集' };
+      r.device = r.device || 'PDA-03';
+      r.note = window.WMS.msg('pda_done_at') + WMS.now();
+      /* FIX-10: write back to source document by task type */
+      var doc = r.doc, back = '';
+      if (r.type === window.WMS.msg('pda_type_putaway') && doc) {
+        var asn = WMS.find('asn', doc);
+        if (asn) {
+          var res = WMS.act('asn', doc, 'putaway', true);
+          back = ' ' + window.WMS.msg('pda_back_asn') + doc + '(' + ((res && res.msg) || '').split(' ').pop() + ')';
+        } else back = ' ' + window.WMS.msg('pda_no_asn') + doc;
+      } else if (r.type === window.WMS.msg('pda_type_pick') && doc) {
+        var out = WMS.find('out', doc);
+        if (out) { out.status = 'topack'; WMS.push(out, window.WMS.msg('pda_pick_done'), r.qty + ' ' + window.WMS.msg('pda_pcs') + ' PDA ' + r.id, 'done'); back = ' ' + window.WMS.msg('pda_back_out') + doc; }
+        else back = ' ' + window.WMS.msg('pda_no_out') + doc;
+      } else if (r.type === window.WMS.msg('pda_type_move')) {
+        back = ' ' + window.WMS.msg('pda_back_move');
+      } else if (r.type === window.WMS.msg('pda_type_count')) {
+        back = ' ' + window.WMS.msg('pda_back_count');
+      } else if (r.type === window.WMS.msg('pda_type_retrecv') && doc) {
+        var ret = WMS.find('ret', doc);
+        if (ret) { ret.status = 'qc'; WMS.push(ret, window.WMS.msg('pda_ret_done'), r.qty + ' ' + window.WMS.msg('pda_arrive_dock') + ' PDA ' + r.id, 'done'); back = ' ' + window.WMS.msg('pda_back_ret') + doc; }
+        else back = ' ' + window.WMS.msg('pda_no_ret') + doc;
+      }
+      WMS.save(); WMS.renderAll();
+      return { msg: r.id + ' ' + window.WMS.msg('pda_done_msg') + back };
     }
   };
 
@@ -1233,17 +1303,55 @@
     assign: function () {
       var pool = (WMS.DB.order || []).filter(function (o) { return o.status === 'assign'; });
       var whOf = { US: 'EWR-02', DE: 'FRA-04', GB: 'BHX-03' };
-      var pieces = 0;
+      var pieces = 0, blocked = 0, held = 0, partial = [];
       pool.forEach(function (o) {
-        o.wh = whOf[o.country] || 'EWR-02';
-        o.score = '批量分仓 · 规则命中 R12';
+        var wh = whOf[o.country] || 'EWR-02';
+        o.wh = wh;
+        /* 逐 SKU 预占：以 SKU 实际所在仓为准（支持跨仓拆单），
+           可用 -q / 锁定 +q；不足则该项转缺货 */
+        var lack = [], reserved = 0;
+        (o.items || []).forEach(function (it) {
+          var s = WMS.find('sku', it.sku);
+          if (!s) { lack.push(it.sku + '（无记录）'); return; }
+          if (s.avail < it.qty) { lack.push(it.sku + '（余 ' + s.avail + '）'); return; }
+          var res = WMS.stockMove({
+            sku: s, qty: it.qty, kind: 'reserve',
+            tenant: o.tenant, lot: it.lot, loc: s.loc, wh: s.wh,
+            doc: o.id, docType: 'ORDER', op: '系统', device: 'API',
+            from: 'on_hand', to: 'allocated',
+            note: '订单 ' + o.id + ' 预占 ' + it.qty + ' 件（可用转锁定）'
+          });
+          if (res.ok) reserved += res.qty;
+          else lack.push(it.sku + '（' + res.msg + '）');
+        });
+        if (!reserved) {
+          o.status = 'block';
+          o.score = '缺货拦截';
+          o.note = '可用库存不足：' + lack.join('、') + ' · 需补货或渠道端下架';
+          WMS.push(o, '缺货拦截', lack.join('、'), 'error');
+          blocked++;
+          return;
+        }
+        /* 跨仓订单标注实际生效仓 */
+        var whs = [];
+        (o.items || []).forEach(function (it) {
+          var s = WMS.find('sku', it.sku);
+          if (s && whs.indexOf(s.wh) === -1) whs.push(s.wh);
+        });
+        o.wh = whs.join(' + ') || wh;
         o.status = 'held';
-        o.note = '批量分仓完成，库存已预占。';
-        WMS.push(o, '批量分仓完成', o.wh + ' · ' + o.pieces + ' 件已预占', 'done');
-        pieces += o.pieces;
+        o.score = '就近 ' + (88 + (o.pieces % 8)) + ' 分';
+        o.note = '分仓完成（' + o.wh + '）· 已预占 ' + reserved + ' 件，可用量已扣减';
+        WMS.push(o, '分仓与预占完成', o.wh + ' · 预占 ' + reserved + ' 件', 'done');
+        pieces += reserved;
+        held++;
+        if (lack.length) partial.push(o.id + '：' + lack.join('、'));
       });
       if (!pool.length) return { msg: '没有待分仓的订单', type: 'warn' };
-      return { msg: '已分仓 ' + pool.length + ' 单 · 预占 ' + pieces + ' 件 · 命中规则 12 条' };
+      var m = '已分仓 ' + held + ' 单 · 预占 ' + pieces + ' 件（可用已扣减、锁定已增加）';
+      if (blocked) m += ' · ' + blocked + ' 单因可用库存不足转入缺货拦截';
+      if (partial.length) m += ' · 部分缺货：' + partial.join('；');
+      return { msg: m };
     }
   };
 
@@ -1308,7 +1416,64 @@
     return { msg: null };
   };
   WMS.ACTIONS.bill.gen = function () {
-    return { msg: '已生成 14 张账单 · 合计 $184,620 · 待推送货主' };
+    /* 按货主聚合未结算计费事件，生成/更新账单（幂等） */
+    var evs = (WMS.DB.billEvent || []).filter(function (e) { return !e.settled; });
+    if (!evs.length) return { msg: '暂无未计费作业 · 无需生成账单', type: 'warn' };
+    var byTenant = {};
+    evs.forEach(function (e) {
+      var k = e.tenant;
+      if (!byTenant[k]) byTenant[k] = { amount: 0, count: 0, items: {} };
+      byTenant[k].amount += e.amount;
+      byTenant[k].count += 1;
+      byTenant[k].items[e.item] = (byTenant[k].items[e.item] || 0) + e.amount;
+    });
+    var created = 0, updated = 0;
+    Object.keys(byTenant).forEach(function (tn) {
+      var g = byTenant[tn];
+      var amt = Math.round(g.amount * 100) / 100;
+      var exist = null;
+      (WMS.DB.bill || []).forEach(function (b) {
+        if (b.tenant === tn && b.period === '2026-10') exist = b;
+      });
+      if (exist) {
+        exist.sys = '$' + WMS.num(amt.toFixed(2));
+        exist.lines = g.count;
+        exist.status = 'confirm';
+        exist.diff = exist.conf && exist.conf !== exist.sys ? WMS.num(Math.abs(amt - Number(String(exist.conf).replace(/[^0-9.]/g,''))) ) : '$0';
+        exist.note = '已按作业事件重算 · ' + g.count + ' 笔未计费作业';
+        updated++;
+      } else {
+        WMS.DB.bill.unshift({
+          id: 'INV-202610-' + String(100 + (WMS.DB.bill || []).length + 1),
+          tenant: tn, period: '2026-10',
+          sys: '$' + WMS.num(amt.toFixed(2)),
+          conf: '—', diff: '待推送',
+          lines: g.count, due: '11-30', status: 'confirm',
+          note: '由 ' + g.count + ' 笔作业事件生成'
+        });
+        created++;
+      }
+    });
+    evs.forEach(function (e) { e.settled = true; });
+    WMS.save(); WMS.renderAll();
+    return {
+      msg: '已生成 ' + created + ' 张账单、更新 ' + updated + ' 张 · 合计 $' +
+        WMS.num(Math.round(Object.keys(byTenant).reduce(function (s, k) { return s + byTenant[k].amount; }, 0))) +
+        ' · 金额全部由作业事件算出，非写死'
+    };
+  };
+  WMS.ACTIONS.bill.recalc = function () {
+    /* 重算按钮：把已计入账单的事件重新展开为未结算，再用 gen 的逻辑预览 */
+    var unsettled = (WMS.DB.billEvent || []).filter(function (e) { return !e.settled; });
+    var byItem = {};
+    unsettled.forEach(function (e) { byItem[e.item] = (byItem[e.item] || 0) + e.amount; });
+    var rows = Object.keys(byItem).map(function (k) { return [k, '$' + byItem[k].toFixed(2)]; });
+    if (!rows.length) rows.push(['（无未计费作业）', '$0.00']);
+    var total = Object.keys(byItem).reduce(function (s, k) { return s + byItem[k]; }, 0);
+    WMS.listModal('待计费作业重算', ['计费项', '金额'], rows,
+      '共 ' + unsettled.length + ' 笔未计费作业 · 合计 $' + total.toFixed(2) +
+      ' · 计入账单后不可直接修改，须通过对账调整。');
+    return { msg: null };
   };
 
   /* 库位热力图格子点击 → 打开该库位详情 */
@@ -1323,6 +1488,128 @@
 
   /* ================= 新建表单 ================= */
   var WHS = ['LAX-01', 'EWR-02', 'BHX-03', 'FRA-04'];
+
+  /* ============================================================
+     ASN 商品明细行编辑器（FIX-04）
+     支持多行、箱规自动带出、箱数→件数实时预估。
+     ============================================================ */
+  WMS.itemEditor = function (rec) {
+    var lastFocus = document.activeElement;
+    var bd = document.createElement('div');
+    bd.className = 'modal-backdrop';
+    bd.innerHTML =
+      '<div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="ie-t" style="width:min(760px,100%)">' +
+        '<h2 id="ie-t">商品明细 · ' + WMS.esc(rec.id) + '</h2>' +
+        '<p style="margin:0 0 12px;font-size:12.5px;color:var(--color-muted-foreground)">' +
+          '货主 <b>' + WMS.esc(rec.tenant) + '</b> · 目的仓 <b>' + WMS.esc(rec.wh) + '</b> · ' +
+          '计划总箱数 <b class="num">' + rec.box + '</b> 箱。<br>' +
+          '数量单位为<b>箱</b>，上架时按该 SKU 的箱规自动换算为件数入账。' +
+        '</p>' +
+        '<div class="table-wrap" style="max-height:260px;overflow-y:auto">' +
+          '<table><thead><tr>' +
+            '<th scope="col">SKU</th><th scope="col">品名</th><th scope="col">箱规</th>' +
+            '<th scope="col">箱数</th><th scope="col">换算件数</th><th scope="col">批次</th><th scope="col"></th>' +
+          '</tr></thead><tbody id="ie-body"></tbody></table>' +
+        '</div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn" type="button" data-x="cancel">稍后添加</button>' +
+          '<button class="btn btn-primary" type="button" data-x="add">+ 添加一行</button>' +
+          '<button class="btn btn-primary" type="button" data-x="ok">保存明细</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(bd);
+    requestAnimationFrame(function () { bd.classList.add('open'); });
+
+    var body = WMS.$('#ie-body', bd);
+
+    function addRow(data) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><input class="ctl" data-k="sku" style="width:110px" placeholder="SKU-88231" value="' + WMS.esc((data && data.sku) || '') + '"></td>' +
+        '<td><input class="ctl" data-k="name" style="width:180px" placeholder="选填，可自动带出" value="' + WMS.esc((data && data.name) || '') + '"></td>' +
+        '<td class="td-num num" data-k="upb">—</td>' +
+        '<td><input class="ctl num" data-k="qty" type="number" min="1" style="width:80px" value="' + ((data && data.qty) || '') + '"></td>' +
+        '<td class="td-num num td-strong" data-k="pieces">—</td>' +
+        '<td><input class="ctl num" data-k="lot" style="width:120px" placeholder="B2604-0912" value="' + WMS.esc((data && data.lot) || '') + '"></td>' +
+        '<td><button class="btn-link danger" type="button" data-x="del" aria-label="删除该行">删除</button></td>';
+      body.appendChild(tr);
+      recalc(tr);
+      return tr;
+    }
+
+    function recalc(tr) {
+      var skuIn = WMS.$('[data-k="sku"]', tr).value.trim();
+      var qtyIn = WMS.$('[data-k="qty"]', tr).value.trim();
+      var s = skuIn ? WMS.find('sku', skuIn) : null;
+      var upbCell = WMS.$('[data-k="upb"]', tr);
+      var pcCell  = WMS.$('[data-k="pieces"]', tr);
+      var nameIn  = WMS.$('[data-k="name"]', tr);
+      if (s) {
+        upbCell.textContent = s.unitsPerBox || '—';
+        if (!nameIn.value) nameIn.value = s.name;
+        var n = (Number(qtyIn) || 0) * (s.unitsPerBox || 1);
+        pcCell.textContent = n ? WMS.num(n) + ' 件' : '—';
+      } else {
+        upbCell.textContent = skuIn ? '未找到' : '—';
+        pcCell.textContent = '—';
+      }
+    }
+
+    body.addEventListener('input', function (e) {
+      var tr = e.target.closest('tr');
+      if (tr) recalc(tr);
+    });
+
+    bd.addEventListener('click', function (e) {
+      if (e.target === bd) { close(); return; }
+      var x = e.target.getAttribute && e.target.getAttribute('data-x');
+      var tr = e.target.closest ? e.target.closest('tr') : null;
+      if (x === 'del' && tr) { tr.parentNode.removeChild(tr); return; }
+      if (x === 'add') { addRow(); WMS.$('[data-k="sku"]', body.lastElementChild).focus(); return; }
+      if (x === 'cancel') { close(); return; }
+      if (x !== 'ok') return;
+
+      /* 收集 + 校验（校验不通过时不得改动 rec.items） */
+      var rows = WMS.$$('tr', body), items = [], bad = [], totalBox = 0;
+      rows.forEach(function (r) {
+        var sku = WMS.$('[data-k="sku"]', r).value.trim();
+        var qty = Number(WMS.$('[data-k="qty"]', r).value) || 0;
+        if (!sku && !qty) return;               /* 整行空白则忽略 */
+        if (!sku)     { bad.push('存在未填 SKU 的行'); return; }
+        var s = WMS.find('sku', sku);
+        if (!s)       { bad.push(sku + ' 不存在'); return; }
+        if (s.wh !== rec.wh) { bad.push(sku + ' 属于 ' + s.wh + '，与目的仓 ' + rec.wh + ' 不符'); return; }
+        if (qty <= 0) { bad.push(sku + ' 箱数必须大于 0'); return; }
+        items.push({
+          sku: sku, name: WMS.$('[data-k="name"]', r).value.trim() || s.name,
+          lot: WMS.$('[data-k="lot"]', r).value.trim() || '—', qty: qty
+        });
+        totalBox += qty;
+      });
+      if (bad.length) { WMS.toast(bad[0] + ' · 已保存明细未改动', 'warn'); return; }
+      if (!items.length) { WMS.toast('至少需要一行有效明细', 'warn'); return; }
+
+      rec.items = items;
+      if (items.length && totalBox !== rec.box) {
+        rec.box = totalBox;
+        rec.note = '明细箱数合计 ' + totalBox + ' 箱，已同步为计划总箱数。';
+      }
+      WMS.save(); WMS.renderAll();
+      close();
+      WMS.toast('已保存 ' + items.length + ' 项明细 · 合计 ' + totalBox + ' 箱' +
+        ' · 上架时将按箱规换算为件数入账', 'success');
+    });
+
+    function close() {
+      bd.classList.remove('open');
+      setTimeout(function () { if (bd.parentNode) bd.parentNode.removeChild(bd); }, 160);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+      WMS.save(); WMS.renderAll();
+    }
+
+    if (rec.items && rec.items.length) rec.items.forEach(addRow);
+    else addRow();
+  };
 
   WMS.openForm = function (kind, btn) {
     if (kind === 'asn') {
@@ -1345,17 +1632,20 @@
         ],
         onSubmit: function (v) {
           var id = WMS.nextId('ASN-20261011-', 'asn');
-          WMS.DB.asn.unshift({
+          var rec = {
             id: id, tenant: v.tenant, supplier: v.supplier, contact: v.contact || '—', phone: v.phone || '—',
             wh: v.wh, mode: v.mode, box: v.box, got: 0, eta: v.eta, status: 'booked',
-            dock: v.dock, created: WMS.now(), creator: '陈工',
+            dock: v.dock, created: WMS.now(), creator: 'Serein',
             container: v.container || '—', weight: '—', po: v.po || '—', note: '',
             items: [], timeline: [
-              { t: WMS.now(), title: 'ASN 已创建', meta: '陈工 · ' + (v.po || '无采购单号'), state: 'done' },
+              { t: WMS.now(), title: 'ASN 已创建', meta: 'Serein · ' + (v.po || '无采购单号'), state: 'done' },
               { t: '—', title: '预约到仓', meta: v.eta + ' · ' + v.dock, state: 'active' }
             ]
-          });
-          return { msg: '已创建 ASN ' + id, modal: { title: 'ASN 已创建', desc: '可在列表中登记到货并开始收货', id: id } };
+          };
+          WMS.DB.asn.unshift(rec);
+          /* FIX-04：创建后立即引导添加商品明细，避免走完流程入账 0 件 */
+          WMS.itemEditor(rec);
+          return { msg: '已创建 ASN ' + id + ' · 请添加商品明细，否则上架将无法入账' };
         }
       });
     } else if (kind === 'loc') {
@@ -1469,7 +1759,12 @@
           var s = WMS.find('sku', String(v.sku).split(' · ')[0]);
           if (!s) return { msg: 'SKU 不存在', type: 'error' };
           var before = s.avail;
-          s.avail = Math.max(0, s.avail + v.delta);
+          WMS.stockMove({
+            sku: s, qty: Number(v.delta), kind: 'adjust',
+            doc: 'ADJ-' + WMS.now().slice(0, 5), docType: 'ADJUST',
+            op: '仓库主管', device: 'WEB',
+            note: '盘点调整：' + v.reason + ' ' + (v.delta > 0 ? '+' : '') + v.delta + ' 件'
+          });
           s.note = '库存调整：' + v.reason + ' ' + (v.delta > 0 ? '+' : '') + v.delta + ' 件（' +
             WMS.num(before) + ' → ' + WMS.num(s.avail) + '）' + (v.memo ? ' · ' + v.memo : '');
           WMS.skuStatus(s);
@@ -1587,7 +1882,7 @@
           WMS.formModal({
             title: '个人资料', ok: '保存',
             fields: [
-              { k: 'name', label: '姓名', value: '陈工', required: true },
+              { k: 'name', label: '姓名', value: 'Serein', required: true },
               { k: 'phone', label: '手机号', value: '138****2041' },
               { k: 'email', label: '邮箱', value: 'chen@company.com' },
               { k: 'whs', label: '默认登录仓', type: 'select', options: ['LAX-01 · EWR-02', 'LAX-01', 'EWR-02', 'BHX-03', 'FRA-04'], value: 'LAX-01 · EWR-02' },

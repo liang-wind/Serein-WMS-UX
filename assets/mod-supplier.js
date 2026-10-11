@@ -34,7 +34,7 @@
         { m: '10 月', lots: 24, onTime: 97.1, short: 0.9, late: 1 }
       ],
       timeline: [
-        { t: '08-12 09:30', title: '供应商建档', meta: '陈工 · 首票 ASN 到 LAX-01', state: 'done' },
+        { t: '08-12 09:30', title: '供应商建档', meta: 'Serein · 首票 ASN 到 LAX-01', state: 'done' },
         { t: '10-11 14:20', title: '最近到货', meta: 'ASN-20261011-0142 · 320 箱 · LAX-01', state: 'done' }
       ]
     },
@@ -94,7 +94,7 @@
         { m: '10 月', lots: 12, onTime: 88.4, short: 4.6, late: 2 }
       ],
       timeline: [
-        { t: '09-20 16:48', title: '供应商建档', meta: '陈工 · 首票 ASN 到 LAX-01', state: 'done' },
+        { t: '09-20 16:48', title: '供应商建档', meta: 'Serein · 首票 ASN 到 LAX-01', state: 'done' },
         { t: '10-10 09:10', title: '验收异常挂起', meta: '短装 4 箱 + 破损 2 箱 · 待索赔', state: 'error' }
       ]
     },
@@ -134,7 +134,7 @@
         { m: '10 月', lots: 9, onTime: 94.1, short: 1.9, late: 0 }
       ],
       timeline: [
-        { t: '04-08 15:12', title: '供应商建档', meta: '陈工 · 首票 ASN 到 BHX-03', state: 'done' },
+        { t: '04-08 15:12', title: '供应商建档', meta: 'Serein · 首票 ASN 到 BHX-03', state: 'done' },
         { t: '10-11 22:00', title: '批次起飞', meta: 'CZ3017 · 预计 10-12 抵 BHX-03', state: 'active' }
       ]
     },
@@ -175,7 +175,7 @@
         { m: '10 月', lots: 8, onTime: 97.2, short: 0.7, late: 0 }
       ],
       timeline: [
-        { t: '12-06 10:15', title: '供应商建档', meta: '陈工 · 代深圳致远电子发货', state: 'done' },
+        { t: '12-06 10:15', title: '供应商建档', meta: 'Serein · 代深圳致远电子发货', state: 'done' },
         { t: '10-08 11:40', title: '最近到货', meta: 'ASN-20261008-0115 · 海运 128 箱', state: 'done' }
       ]
     },
@@ -215,7 +215,7 @@
         { m: '10 月', lots: 7, onTime: 95.4, short: 1.4, late: 0 }
       ],
       timeline: [
-        { t: '06-10 11:00', title: '供应商建档', meta: '陈工 · 灯饰类第二货源', state: 'done' },
+        { t: '06-10 11:00', title: '供应商建档', meta: 'Serein · 灯饰类第二货源', state: 'done' },
         { t: '10-09 10:30', title: '最近到货', meta: 'ASN-20261009-0116 · 空运 62 箱', state: 'done' }
       ]
     }
@@ -368,7 +368,7 @@
             note: '新建供应商 ' + WMS.now() + ' · 尚无到货记录，绩效将在首批 ASN 验收后按实际数据统计。',
             perf: [],
             timeline: [
-              { t: WMS.now(), title: '供应商建档', meta: '陈工 · ' + v.cat, state: 'active' },
+              { t: WMS.now(), title: '供应商建档', meta: 'Serein · ' + v.cat, state: 'active' },
               { t: '—', title: '首批到货', meta: '待创建 ASN 后归集', state: 'pending' }
             ]
           });

@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/wms.css">
+<link rel="stylesheet" href="../assets/wms.css">
+<link rel="stylesheet" href="../assets/themes.css">
 </head>
 <body data-page="billing">
 <a class="skip-link" href="#main">跳转到主要内容</a>
@@ -251,8 +252,8 @@
               </div>
             </div>
             <div style="display:flex;gap:8px;margin-top:12px">
-              <button class="btn btn-sm" type="button" style="flex:1" data-toast="已重算 1,284 笔待计费作业 · 与规则版本 v12 一致">重算</button>
-              <button class="btn btn-sm btn-primary" type="button" data-confirm="将把 1,284 笔作业计入 10 月账单，计入后仍可通过对账调整修正。" data-title="确认计费" data-ok="计入账单" data-toast="1,284 笔作业已计费 · 合计 $4,860">确认计费</button>
+              <button class="btn btn-sm" type="button" style="flex:1" data-action="bill:*:recalc">重算</button>
+              <button class="btn btn-sm btn-primary" type="button" data-confirm="将把当前未结算的作业事件计入 10 月账单，计入后仍可通过对账调整修正。" data-title="确认计费" data-ok="计入账单" data-action="bill:*:gen">确认计费</button>
             </div>
           </section>
 
@@ -348,10 +349,10 @@
   </div>
 </div>
 
-<script src="assets/shell.js"></script>
-<script src="assets/ui.js"></script>
-<script src="assets/data.js"></script>
-<script src="assets/app.js"></script>
-<script src="assets/actions.js"></script>
+<script src="../assets/shell.js"></script>
+<script src="../assets/ui.js"></script>
+<script src="../assets/data.js"></script>
+<script src="../assets/app.js"></script>
+<script src="../assets/actions.js"></script>
 </body>
 </html>

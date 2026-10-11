@@ -12,7 +12,7 @@ WMS.DB = {
     {
       id:'ASN-20261011-0142', tenant:'深圳致远电子', supplier:'深圳致远电子', contact:'李敏', phone:'+86 755 8812 4471',
       wh:'LAX-01', mode:'海运', box:320, got:218, eta:'10-11 14:00', status:'receiving',
-      dock:'月台 D2', created:'10-08 09:12', creator:'陈工', container:'MSCU7723841',
+      dock:'月台 D2', created:'10-08 09:12', creator:'Serein', container:'MSCU7723841',
       weight:'4,180 kg', po:'PO-2026-90412', note:'',
       items:[
         {sku:'SKU-88231', name:'便携式榨汁杯 450ml', lot:'B2604-0912', qty:120},
@@ -21,7 +21,7 @@ WMS.DB = {
         {sku:'SKU-44122', name:'蓝牙自拍杆 三脚架款', lot:'B2604-0930', qty:50}
       ],
       timeline:[
-        {t:'10-08 09:12', title:'ASN 已创建', meta:'陈工 · PO-2026-90412', state:'done'},
+        {t:'10-08 09:12', title:'ASN 已创建', meta:'Serein · PO-2026-90412', state:'done'},
         {t:'10-10 17:40', title:'到港预约确认', meta:'月台 D2 · 10-11 14:00', state:'done'},
         {t:'10-11 14:20', title:'收货扫码进行中', meta:'218 / 320 箱 · 收货员 王大力', state:'active'},
         {t:'—', title:'质检验收', meta:'待开始', state:'pending'},
@@ -65,7 +65,7 @@ WMS.DB = {
     {
       id:'ASN-20261010-0131', tenant:'宁波海诚日用', supplier:'宁波海诚日用', contact:'陈海', phone:'+86 574 8722 3390',
       wh:'LAX-01', mode:'快递', box:76, got:76, eta:'10-10 07:40', status:'error',
-      dock:'月台 D2', created:'10-07 16:48', creator:'陈工', container:'DHL 7741-8820-6',
+      dock:'月台 D2', created:'10-07 16:48', creator:'Serein', container:'DHL 7741-8820-6',
       weight:'412 kg', po:'PO-2026-90401',
       note:'短装 4 箱（应到 80 实到 76），外箱破损 2 箱。已通知供应商补发，预计 10-14 到仓。',
       items:[
@@ -73,7 +73,7 @@ WMS.DB = {
         {sku:'SKU-11708', name:'棉麻窗帘 200×270cm', lot:'B2604-0903', qty:36}
       ],
       timeline:[
-        {t:'10-07 16:48', title:'ASN 已创建', meta:'陈工 · PO-2026-90401', state:'done'},
+        {t:'10-07 16:48', title:'ASN 已创建', meta:'Serein · PO-2026-90401', state:'done'},
         {t:'10-10 07:40', title:'到仓签收', meta:'月台 D2 · 快递直送', state:'done'},
         {t:'10-10 08:26', title:'收货完成', meta:'76 / 80 箱 · 短装 4 箱', state:'done'},
         {t:'10-10 09:10', title:'验收异常挂起', meta:'短装 + 破损 · 待处理', state:'error'},
@@ -117,11 +117,11 @@ WMS.DB = {
     {
       id:'ASN-20261009-0112', tenant:'中山灯饰照明', supplier:'中山灯饰照明', contact:'郑明', phone:'+86 760 2233 7719',
       wh:'BHX-03', mode:'空运', box:45, got:0, eta:'10-12 08:30', status:'booked',
-      dock:'月台 D5', created:'10-08 15:12', creator:'陈工', container:'航空板 AKE-23077',
+      dock:'月台 D5', created:'10-08 15:12', creator:'Serein', container:'航空板 AKE-23077',
       weight:'318 kg', po:'PO-2026-90425', note:'',
       items:[{sku:'SKU-56012', name:'LED 感应夜灯 磁吸款', lot:'B2604-0918', qty:45}],
       timeline:[
-        {t:'10-08 15:12', title:'ASN 已创建', meta:'陈工 · PO-2026-90425', state:'done'},
+        {t:'10-08 15:12', title:'ASN 已创建', meta:'Serein · PO-2026-90425', state:'done'},
         {t:'10-11 22:00', title:'航班起飞', meta:'CZ3017 · 预计 10-12 06:10 抵 BHX', state:'done'},
         {t:'10-12 08:30', title:'预约到仓', meta:'月台 D5 · 待卸货', state:'active'},
         {t:'—', title:'收货扫码', meta:'待开始', state:'pending'},
@@ -135,7 +135,7 @@ WMS.DB = {
     {
       id:'SKU-88231', name:'便携式榨汁杯 450ml', cat:'3C 电子', wh:'LAX-01', loc:'A-03-12',
       avail:12, lock:0, safety:50, status:'low', cost:'$3.42', supplier:'深圳致远电子',
-      lastIn:'10-11', turnover:'42 天', velocity:'日均 38 件',
+      unitsPerBox:12, lastIn:'10-11', turnover:'42 天', velocity:'日均 38 件',
       bins:[{loc:'A-03-12', type:'存储位', qty:12, lock:0}, {loc:'A-03-13', type:'存储位', qty:0, lock:0}],
       batches:[{lot:'B2604-0912', qty:12, exp:'2027-04-12', in:'10-11'}],
       note:'低于安全线 38 件。近 7 日销量 266 件，按当前速度 0.4 天将售罄，建议今日补货。'
@@ -143,7 +143,7 @@ WMS.DB = {
     {
       id:'SKU-71904', name:'折叠收纳箱 66L 三件套', cat:'家居日用', wh:'EWR-02', loc:'C-11-04',
       avail:8420, lock:360, safety:1200, status:'ok', cost:'$5.80', supplier:'义乌恒发家居',
-      lastIn:'10-11', turnover:'31 天', velocity:'日均 272 件',
+      unitsPerBox:6, lastIn:'10-11', turnover:'31 天', velocity:'日均 272 件',
       bins:[{loc:'C-11-04', type:'存储位', qty:5120, lock:180}, {loc:'C-11-05', type:'存储位', qty:3300, lock:180}],
       batches:[
         {lot:'B2604-0908', qty:5120, exp:'—', in:'10-11'},
@@ -154,6 +154,7 @@ WMS.DB = {
     {
       id:'SKU-56012', name:'LED 感应夜灯 磁吸款', cat:'3C 电子', wh:'BHX-03', loc:'B-07-21',
       avail:0, lock:0, safety:300, status:'oos', cost:'$1.95', supplier:'东莞精工五金',
+      unitsPerBox:24,
       lastIn:'09-28', turnover:'—', velocity:'日均 64 件',
       bins:[{loc:'B-07-21', type:'拣货位', qty:0, lock:0}],
       batches:[],
@@ -162,6 +163,7 @@ WMS.DB = {
     {
       id:'SKU-33478', name:'不锈钢保温杯 500ml', cat:'家居日用', wh:'FRA-04', loc:'D-02-09',
       avail:2140, lock:88, safety:600, status:'ok', cost:'$2.76', supplier:'宁波海诚日用',
+      unitsPerBox:36,
       lastIn:'10-10', turnover:'36 天', velocity:'日均 59 件',
       bins:[{loc:'D-02-09', type:'存储位', qty:1480, lock:40}, {loc:'D-02-10', type:'存储位', qty:660, lock:48}],
       batches:[
@@ -173,6 +175,7 @@ WMS.DB = {
     {
       id:'SKU-20865', name:'宠物自动饮水机 2.4L', cat:'家居日用', wh:'LAX-01', loc:'A-09-03',
       avail:410, lock:1200, safety:400, status:'lock', cost:'$6.15', supplier:'中山灯饰照明',
+      unitsPerBox:8,
       lastIn:'10-06', turnover:'28 天', velocity:'日均 43 件',
       bins:[{loc:'A-09-03', type:'存储位', qty:1610, lock:1200}],
       batches:[{lot:'B2604-0847', qty:1610, exp:'—', in:'10-06'}],
@@ -181,6 +184,7 @@ WMS.DB = {
     {
       id:'SKU-99310', name:'瑜伽垫 TPE 加厚 8mm', cat:'运动户外', wh:'EWR-02', loc:'C-04-16',
       avail:5730, lock:142, safety:800, status:'ok', cost:'$4.28', supplier:'泉州鞋业外贸',
+      unitsPerBox:20,
       lastIn:'10-10', turnover:'34 天', velocity:'日均 168 件',
       bins:[{loc:'C-04-16', type:'存储位', qty:3830, lock:92}, {loc:'C-04-17', type:'存储位', qty:1900, lock:50}],
       batches:[
@@ -192,6 +196,7 @@ WMS.DB = {
     {
       id:'SKU-44122', name:'蓝牙自拍杆 三脚架款', cat:'3C 电子', wh:'BHX-03', loc:'B-12-07',
       avail:62, lock:0, safety:250, status:'low', cost:'$2.10', supplier:'中山灯饰照明',
+      unitsPerBox:48,
       lastIn:'09-30', turnover:'51 天', velocity:'日均 21 件',
       bins:[{loc:'B-12-07', type:'拣货位', qty:62, lock:0}],
       batches:[{lot:'B2604-0722', qty:62, exp:'—', in:'09-30'}],
@@ -200,6 +205,7 @@ WMS.DB = {
     {
       id:'SKU-11708', name:'棉麻窗帘 200×270cm', cat:'家居日用', wh:'FRA-04', loc:'D-06-22',
       avail:1905, lock:0, safety:300, status:'slow', cost:'$7.90', supplier:'义乌恒发家居',
+      unitsPerBox:4,
       lastIn:'10-09', turnover:'96 天', velocity:'日均 3 件',
       bins:[{loc:'D-06-22', type:'存储位', qty:1905, lock:0}],
       batches:[{lot:'B2604-0825', qty:1905, exp:'—', in:'10-09'}],
@@ -367,7 +373,7 @@ WMS.DB = {
 
   /* ================= 报表 ================= */
   rpt: [
-    {id:'RPT-01', name:'出入库吞吐日报', cat:'仓储作业', dim:'仓库维度', freq:'每日 06:00', owner:'陈工', subs:14,
+    {id:'RPT-01', name:'出入库吞吐日报', cat:'仓储作业', dim:'仓库维度', freq:'每日 06:00', owner:'Serein', subs:14,
      last:'10-11 06:00', status:'ok', range:'近 7 天 · 按日', unit:'箱',
      desc:'统计各仓每日入库、出库、在库结存与吞吐比。',
      cols:['日期','入库(箱)','出库(箱)','净结存','吞吐比'],
@@ -398,7 +404,7 @@ WMS.DB = {
      chart:null,
      sum:['全网人均 140 件/h，FRA-04 最优、BHX-03 最弱','BHX-03 错拣率 0.52% 高于阈值 0.4%，建议复查 B 区库位标签']},
 
-    {id:'RPT-03', name:'库存周转与呆滞', cat:'库存分析', dim:'货主维度', freq:'每周五 18:00', owner:'陈工', subs:11,
+    {id:'RPT-03', name:'库存周转与呆滞', cat:'库存分析', dim:'货主维度', freq:'每周五 18:00', owner:'Serein', subs:11,
      last:'10-10 18:00', status:'ok', range:'近 30 天 · 按品类', unit:'天',
      desc:'各品类周转天数、呆滞 SKU 数量与占用金额。',
      cols:['品类','SKU 数','周转天数','呆滞 SKU','占用金额'],
@@ -467,7 +473,7 @@ WMS.DB = {
 
   /* ================= 用户 ================= */
   usr: [
-    {id:'U01', name:'陈工', role:'管理员', whs:'LAX-01 · EWR-02', scope:'全部 18 家', phone:'138****2041',
+    {id:'U01', name:'Serein', role:'管理员', whs:'LAX-01 · EWR-02', scope:'全部 18 家', phone:'138****2041',
      last:'10-11 09:12', status:'on', email:'chen@company.com',
      perms:{'仓储作业':1,'库存管理':1,'出库发货':1,'库位管理':1,'数据报表':1,'系统设置':1}},
     {id:'U02', name:'刘主管', role:'主管', whs:'LAX-01', scope:'致远 · 安克 · 东莞', phone:'139****7788',
@@ -714,13 +720,13 @@ WMS.DB = {
   /* ================= 换标与处置队列 ================= */
   retn: [
     {id:'RL-20261011-0042', src:'RTN-20261011-0181', tenant:'东莞精工五金',
-     sku:'SKU-56012', qty:12, act:'换标', tag:'X002ABCD', owner:'陈工', status:'printing', wh:'LAX-01',
+     sku:'SKU-56012', qty:12, act:'换标', tag:'X002ABCD', owner:'Serein', status:'printing', wh:'LAX-01',
      note:'12 张 FNSKU 标签生成中，完成后送至 LAX-01 标签打印机。'},
     {id:'RL-20261011-0041', src:'RTN-20261011-0198', tenant:'义乌恒发家居',
      sku:'SKU-71904', qty:1, act:'翻新', tag:'原标保留', owner:'王运营', status:'waitfix', wh:'EWR-02',
      note:'外包装破损，需更换新包装后重新上架。'},
     {id:'RL-20261011-0040', src:'RTN-20261011-0201', tenant:'深圳致远电子',
-     sku:'SKU-88231', qty:24, act:'重新上架', tag:'A-03-12', owner:'陈工', status:'waitput', wh:'LAX-01',
+     sku:'SKU-88231', qty:24, act:'重新上架', tag:'A-03-12', owner:'Serein', status:'waitput', wh:'LAX-01',
      note:'目标库位 A-03-12，上架任务待推送 PDA。'},
     {id:'RL-20261011-0039', src:'RTN-20261011-0170', tenant:'中山灯饰照明',
      sku:'SKU-99310', qty:3, act:'翻新', tag:'原标保留', owner:'王运营', status:'waitput', wh:'BHX-03',
@@ -865,7 +871,7 @@ WMS.DB = {
       sku:'SKU-88231', name:'便携式榨汁杯 450ml', lot:'B2604-0912', loc:'A-03-12',
       qty:12, dir:'IN', from:'in_transit', to:'on_hand',
       docType:'ASN', doc:'ASN-20261011-0142', line:1,
-      op:'陈工', device:'PDA-03', balance:142,
+      op:'Serein', device:'PDA-03', balance:142,
       note:'上架入位 12 件，计入深圳致远电子台账。'
     },
     {
@@ -873,7 +879,7 @@ WMS.DB = {
       sku:'SKU-88231', name:'便携式榨汁杯 450ml', lot:'B2604-0912', loc:'月台 D2',
       qty:12, dir:'IN', from:'in_transit', to:'in_dock',
       docType:'ASN', doc:'ASN-20261011-0142', line:1,
-      op:'陈工', device:'PDA-03', balance:130,
+      op:'Serein', device:'PDA-03', balance:130,
       note:'扫码收货第 219 箱，箱子至月台 D2。'
     },
     {
@@ -940,6 +946,22 @@ WMS.DB = {
       op:'刘主管', device:'WEB', balance:62,
       note:'盘点差异调整 -2 件（少货），审批单 ADJ-20261010-0031 已通过。'
     }
+  ],
+
+  /* ================= 计费事件 billEvent（FIX-05） =================
+     每次作业（上架/交接/退件上架/调整）由 WMS.stockMove 自动产生，
+     金额 = 数量 × 单价，按货主聚合后生成账单。不再有写死的账单金额。 */
+  billEvent: [
+    { id:'BE-20261011-0186', t:'10-11 14:26', tenant:'深圳致远电子', item:'入库操作费', qty:120, unit:0.45, amount:54.00,  docType:'ASN',      doc:'ASN-20261011-0142', settled:false },
+    { id:'BE-20261011-0185', t:'10-11 13:05', tenant:'义乌恒发家居', item:'入库操作费', qty:360, unit:0.45, amount:162.00, docType:'ASN',      doc:'ASN-20261011-0141', settled:false },
+    { id:'BE-20261011-0184', t:'10-11 12:41', tenant:'安克创新科技', item:'出库操作费', qty:24,  unit:0.38, amount:9.12,   docType:'OUTBOUND', doc:'OUT-20261011-3572',  settled:false },
+    { id:'BE-20261011-0183', t:'10-11 11:58', tenant:'安克创新科技', item:'出库操作费', qty:11,  unit:0.38, amount:4.18,   docType:'OUTBOUND', doc:'OUT-20261011-3568',  settled:false },
+    { id:'BE-20261011-0182', t:'10-11 11:20', tenant:'中山灯饰照明', item:'出库操作费', qty:8,   unit:0.38, amount:3.04,   docType:'OUTBOUND', doc:'OUT-20261011-3533',  settled:false },
+    { id:'BE-20261011-0181', t:'10-11 10:47', tenant:'东莞精工五金', item:'退件重新上架', qty:12, unit:0.30, amount:3.60,   docType:'RETURN',   doc:'RTN-20261011-0181',  settled:false },
+    { id:'BE-20261011-0180', t:'10-11 10:12', tenant:'苏州明达玩具', item:'退件重新上架', qty:6,  unit:0.30, amount:1.80,   docType:'RETURN',   doc:'RTN-20261011-0170',  settled:false },
+    { id:'BE-20261011-0179', t:'10-11 09:58', tenant:'乐歌家居科技', item:'库存调整',   qty:-2,  unit:0,    amount:0,      docType:'ADJUST',   doc:'ADJ-20261011-0067', settled:false },
+    { id:'BE-20261010-0166', t:'10-10 18:31', tenant:'苏州明达玩具', item:'出库操作费', qty:60,  unit:0.38, amount:22.80,  docType:'OUTBOUND', doc:'OUT-20261010-3501',  settled:true },
+    { id:'BE-20261010-0165', t:'10-10 17:02', tenant:'乐歌家居科技', item:'入库操作费', qty:480, unit:0.45, amount:216.00, docType:'ASN',      doc:'ASN-20261010-0138',  settled:true }
   ]
 };
 
@@ -1004,6 +1026,17 @@ WMS.STATUS_BY = {
          done:{cls:'b-done', text:'已完成'}},
   wh:   {setup:{cls:'b-wait', text:'待启用'}, active:{cls:'b-done', text:'运营中'},
          hold:{cls:'b-err',  text:'已停用'}},
+  /* 库存状态（库存流水 from/to 专用，全站同一套中文名） */
+  stock:{in_transit:{cls:'b-ing',  text:'在途'},
+         in_dock:{cls:'b-ing',      text:'卸货中'},
+         inspecting:{cls:'b-ing',   text:'质检中'},
+         on_hand:{cls:'b-done',     text:'在库'},
+         allocated:{cls:'b-ing',    text:'已分配'},
+         picked:{cls:'b-ing',       text:'已拣货'},
+         packed:{cls:'b-wait',      text:'已打包'},
+         shipped:{cls:'b-done',     text:'已发运'},
+         quarantined:{cls:'b-wait', text:'隔离中'},
+         damaged:{cls:'b-err',      text:'已破损'}},
     ledger:{IN:{cls:'b-done', text:'入库'}, OUT:{cls:'b-err', text:'出库'},
             ADJ:{cls:'b-wait', text:'调整'}}
 };
@@ -1022,8 +1055,36 @@ WMS.STATUS_TEXT = {
   rpt:{ok:'正常', pending:'待更新', failed:'生成失败', generating:'生成中'},
   usr:{on:'启用', off:'停用'},
   sku:{ok:'正常', low:'低库存', oos:'缺货', lock:'锁定', slow:'呆滞'},
+  stock:{in_transit:'在途', in_dock:'卸货中', inspecting:'质检中', on_hand:'在库',
+         allocated:'已分配', picked:'已拣货', packed:'已打包', shipped:'已发运',
+         quarantined:'隔离中', damaged:'已破损'},
   ledger:{IN:'入库', OUT:'出库', ADJ:'调整'}
 };
+/* 界面文案表（PDA 回写等场景使用，集中避免中文散落在脚本中） */
+WMS.MSG = {
+  pda_done_at:      '完成于 ',
+  pda_done_msg:     '作业完成 · 结果已入账',
+  pda_back_asn:     '· 已回写 ASN ',
+  pda_no_asn:       '· 未找到来源 ASN ',
+  pda_back_out:     '· 已回写出库单 ',
+  pda_no_out:       '· 未找到来源出库单 ',
+  pda_back_move:    '· 移库任务已登记，库位变更待确认',
+  pda_back_count:   '· 盘点结果已进入差异复核队列',
+  pda_back_ret:     '· 已回写退件单 ',
+  pda_no_ret:       '· 未找到来源退件单 ',
+  pda_pick_done:    '拣货完成',
+  pda_ret_done:     '退件已收货',
+  pda_type_putaway: '上架',
+  pda_type_pick:    '拣货',
+  pda_type_move:    '移库',
+  pda_type_count:   '盘点',
+  pda_type_retrecv: '退件收货',
+  pda_pcs:          '件',
+  pda_arrive_dock:  '件到月台'
+};
+window.WMS.msg = function (k) { return (WMS.MSG && WMS.MSG[k]) || ''; };
+
+
 WMS.statusText = function (kind, key) {
   if (WMS.STATUS_BY[kind]) {
     var b = WMS.STATUS_BY[kind][key];

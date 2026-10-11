@@ -22,10 +22,10 @@
     {
       id: 'PJ-20261011-0441', tpl: '箱唛', src: 'ASN-20261011-0142', doc: 'ASN',
       tenant: '深圳致远电子', tenantId: 'TN-00041', wh: 'LAX-01',
-      copies: 320, printer: 'LP-LAX-01', by: '陈工', t: '10-11 14:32', attempts: 1,
+      copies: 320, printer: 'LP-LAX-01', by: 'Serein', t: '10-11 14:32', attempts: 1,
       status: 'done', note: '320 张箱唛已打印并贴附于对应箱号，收货扫码可直接核对。',
       timeline: [
-        { t: '10-11 14:30', title: '任务已提交', meta: '箱唛 · 320 份 · 提交人 陈工', state: 'done' },
+        { t: '10-11 14:30', title: '任务已提交', meta: '箱唛 · 320 份 · 提交人 Serein', state: 'done' },
         { t: '10-11 14:32', title: '打印完成', meta: 'LP-LAX-01 · 320 张 · 首张校验通过', state: 'done' }
       ]
     },
@@ -54,7 +54,7 @@
     {
       id: 'PJ-20261011-0444', tpl: '商品条码标签', src: 'RTN-20261011-0181', doc: 'RTN',
       tenant: '东莞精工五金', tenantId: 'TN-00108', wh: 'LAX-01',
-      copies: 12, printer: 'LP-LAX-01', by: '陈工', t: '10-11 14:02', attempts: 1,
+      copies: 12, printer: 'LP-LAX-01', by: 'Serein', t: '10-11 14:02', attempts: 1,
       status: 'queued', note: '换标 12 件，新 FNSKU X002ABCD 标签待打印后重新入仓。',
       timeline: [
         { t: '10-11 14:00', title: '任务已提交', meta: '商品条码标签 · 12 份 · 换标', state: 'done' },
@@ -84,7 +84,7 @@
     {
       id: 'PJ-20261011-0447', tpl: '发票', src: 'INV-202610-0041', doc: 'BILL',
       tenant: '深圳致远电子', tenantId: 'TN-00041', wh: 'LAX-01',
-      copies: 1, printer: 'LP-LAX-02', by: '陈工', t: '10-11 12:58', attempts: 1,
+      copies: 1, printer: 'LP-LAX-02', by: 'Serein', t: '10-11 12:58', attempts: 1,
       status: 'printing', note: '10 月仓储服务费发票 $32,480，A4 打印后推送货主确认。',
       timeline: [
         { t: '10-11 12:56', title: '任务已提交', meta: '发票 · 1 份 · 账期 2026-10', state: 'done' },
@@ -431,7 +431,7 @@
           var id = WMS.nextId('PJ-20261011-', 'printJob');
           WMS.DB.printJob.unshift({
             id: id, tpl: v.tpl, src: v.src, doc: 'ASN', tenant: '深圳致远电子', tenantId: 'TN-00041',
-            wh: v.wh, copies: v.copies, printer: v.printer, by: '陈工', t: WMS.now(),
+            wh: v.wh, copies: v.copies, printer: v.printer, by: 'Serein', t: WMS.now(),
             attempts: 0, status: 'queued',
             note: '演示数据：由打印中心手动提交，等待设备空闲后输出。',
             timeline: [
