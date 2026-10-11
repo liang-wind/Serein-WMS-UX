@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>退件管理 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="returns" data-wh-col="3">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">退件管理<span>逆向物流 · 质检分级 · 换标翻新 · 处置计费</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="退件关键指标">
+        <div class="kpi-grid">
+          <article class="card kpi">
+            <div class="kpi-label">待到货退件</div>
+            <div class="kpi-value num" data-kpi="count:ret.arrive">212</div>
+            <div class="kpi-delta">FBA 移除 <b>96</b> · RMA <b>78</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">质检中</div>
+            <div class="kpi-value num" data-kpi="count:ret.qc">46</div>
+            <div class="kpi-delta">滞留超 24h <b class="down">7</b> 单</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">待换标</div>
+            <div class="kpi-value num" data-kpi="count:ret.relabel">38</div>
+            <div class="kpi-delta">新 FNSKU 已生成 <b>38</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">本月退件率</div>
+            <div class="kpi-value num">4.7<span class="unit">%</span></div>
+            <div class="kpi-delta">目标 ≤5% · <b class="up">↓ 0.3%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">退件收益</div>
+            <div class="kpi-value num">$28,410</div>
+            <div class="kpi-delta">换标 62% · 重新上架 24%</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-wh">收货仓</label>
+          <select id="f-wh" class="ctl" data-filter-col="3"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-type">退货类型</label>
+          <select id="f-type" class="ctl" data-filter-col="1"><option>全部</option><option>FBA 移除</option><option>买家 RMA</option><option>派送失败</option></select>
+        </div>
+        <div class="field">
+          <label for="f-grade">质检分级</label>
+          <select id="f-grade" class="ctl" data-filter-col="6"><option>全部</option><option>可售</option><option>待翻新</option><option>残损</option><option>报废</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="退件单号 / SKU / 运单号" data-filter-col="0,5">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-form="ret">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          新建退件预报
+        </button>
+        <button class="btn btn-primary" type="button" data-confirm="将按货主预设策略批量处置已质检退件，含重新上架、换标与报废，动作不可回退。" data-title="批量处置" data-ok="开始处置" data-action="ret:*:batch">
+          批量处置
+        </button>
+      </div>
+
+      <div class="row-2">
+        <!-- 退件单列表 -->
+        <section class="card" aria-labelledby="h-list">
+          <div class="section-head">
+            <h2 id="h-list">退件单</h2>
+            <span class="hint" data-count-src="ret">共 334 条 · 演示数据</span>
+            <span class="hint" data-result-count>334</span>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="退件单状态筛选" style="margin-top:6px">
+            <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">334</span></button>
+            <button class="tab" role="tab" aria-selected="false">待到货 <span class="tab-count">212</span></button>
+            <button class="tab" role="tab" aria-selected="false">质检中 <span class="tab-count">46</span></button>
+            <button class="tab" role="tab" aria-selected="false">待换标 <span class="tab-count">38</span></button>
+            <button class="tab" role="tab" aria-selected="false">已完成 <span class="tab-count">38</span></button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:8px">
+            <table>
+              <caption class="skip-link">退件单列表</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sortable">退件单号</th>
+                  <th scope="col">退货类型</th>
+                  <th scope="col">货主</th>
+                  <th scope="col">收货仓</th>
+                  <th scope="col">件数</th>
+                  <th scope="col">SKU</th>
+                  <th scope="col">质检分级</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody data-render="ret"></tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>每页 20 条 · 第 1 / 17 页</span>
+            <span class="spacer"></span>
+            <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+            <button class="page-btn" type="button" aria-current="page">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <!-- 质检分级工作台 -->
+          <section class="card" aria-labelledby="h-grade">
+            <div class="section-head">
+              <h2 id="h-grade">质检分级工作台</h2>
+              <span class="hint">LAX-01 · 演示数据</span>
+            </div>
+            <div class="check-list" style="margin-top:4px">
+              <div class="check">
+                <input type="checkbox" id="g1" checked>
+                <div class="check-body">
+                  <label class="check-title" for="g1">A 级 · 可售</label>
+                  <div class="check-help">外观完好 · 直接重新上架 · 本月 <b class="num">1,240</b> 件</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="g2" checked>
+                <div class="check-body">
+                  <label class="check-title" for="g2">B 级 · 待翻新</label>
+                  <div class="check-help">外包装破损 / 需换标 · 翻新后上架 · 本月 <b class="num">486</b> 件</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="g3">
+                <div class="check-body">
+                  <label class="check-title" for="g3">C 级 · 残损</label>
+                  <div class="check-help">影响二次销售 · 转货主折扣处理 · 本月 <b class="num">92</b> 件</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="g4">
+                <div class="check-body">
+                  <label class="check-title" for="g4">D 级 · 报废</label>
+                  <div class="check-help">不可修复 · 需货主确认后销毁 · 本月 <b class="num">64</b> 件</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm" type="button" style="flex:1" data-toast="质检标准文档已打开 · 共 4 级 18 项判定细则">质检标准</button>
+              <button class="btn btn-sm btn-primary" type="button" data-toast="分级结果已保存 · 46 件退件已分流至对应处置队列">保存分级</button>
+            </div>
+          </section>
+
+          <!-- 处置策略 -->
+          <section class="card" aria-labelledby="h-policy">
+            <div class="section-head">
+              <h2 id="h-policy">货主处置策略</h2>
+              <span class="hint">按货主预设</span>
+            </div>
+            <div style="margin-top:4px">
+              <div class="slot">
+                <span class="slot-time">A 级</span>
+                <div class="slot-body">
+                  <div class="slot-name">深圳致远电子 → 自动重新上架</div>
+                  <div class="slot-sub">序列号商品强制核验 SN 后入库</div>
+                </div>
+                <span class="slot-load text-success">自动</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">B 级</span>
+                <div class="slot-body">
+                  <div class="slot-name">东莞精工五金 → 换标后上架</div>
+                  <div class="slot-sub">自动生成新 FNSKU · 平均耗时 6 分钟/件</div>
+                </div>
+                <span class="slot-load text-success">自动</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">C 级</span>
+                <div class="slot-body">
+                  <div class="slot-name">苏州明达玩具 → 人工确认</div>
+                  <div class="slot-sub">残损件需货主在 48 小时内确认处置方式</div>
+                </div>
+                <span class="slot-load text-warning">待确认</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">D 级</span>
+                <div class="slot-body">
+                  <div class="slot-name">乐歌家居科技 → 销毁并留存影像</div>
+                  <div class="slot-sub">销毁前拍照留档 · 报告随账单发送</div>
+                </div>
+                <span class="slot-load text-muted">需审批</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 退件费用 -->
+          <section class="card" aria-labelledby="h-fee">
+            <div class="section-head">
+              <h2 id="h-fee">退件作业计费</h2>
+              <span class="hint">未计费 46 单</span>
+            </div>
+            <div class="table-wrap" style="margin-top:4px">
+              <table>
+                <caption class="skip-link">退件相关计费项与未计费数量</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">计费项</th>
+                    <th scope="col">单价</th>
+                    <th scope="col">未计费</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>退件收货</td>
+                    <td class="td-num">$0.45 / 件</td>
+                    <td class="td-num">212</td>
+                  </tr>
+                  <tr>
+                    <td>质检分级</td>
+                    <td class="td-num">$0.30 / 件</td>
+                    <td class="td-num">46</td>
+                  </tr>
+                  <tr>
+                    <td>换标（含 FNSKU）</td>
+                    <td class="td-num">$0.60 / 件</td>
+                    <td class="td-num">38</td>
+                  </tr>
+                  <tr>
+                    <td>翻新重新包装</td>
+                    <td class="td-num">$1.20 / 件</td>
+                    <td class="td-num">92</td>
+                  </tr>
+                  <tr>
+                    <td>销毁（含影像）</td>
+                    <td class="td-num">$0.80 / 件</td>
+                    <td class="td-num">0</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-sm" type="button" style="width:100%;margin-top:10px" data-toast="已生成退件计费预估 · 合计 $431.60 · 共 388 件次">计费预估</button>
+          </section>
+        </div>
+      </div>
+
+      <!-- 处置队列 -->
+      <section class="card" aria-labelledby="h-queue">
+        <div class="section-head">
+          <h2 id="h-queue">换标与处置队列</h2>
+          <span class="hint">演示数据</span>
+          <span class="hint" data-result-count>5</span>
+        </div>
+        <div class="tabs" role="tablist" aria-label="处置类型筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">5</span></button>
+          <button class="tab" role="tab" aria-selected="false">待换标 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">待上架 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">待销毁 <span class="tab-count">1</span></button>
+        </div>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">换标与处置队列列表</caption>
+            <thead>
+              <tr>
+                <th scope="col">队列单号</th>
+                <th scope="col">来源退件单</th>
+                <th scope="col">货主</th>
+                <th scope="col">SKU / 件数</th>
+                <th scope="col">目标动作</th>
+                <th scope="col">新标识</th>
+                <th scope="col">负责人</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="retn"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span>每页 20 条 · 第 1 / 1 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>

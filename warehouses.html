@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>仓库管理 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="warehouses">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">仓库管理<span>仓库档案 · 库区月台 · 时区币种 · 投运配置</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="仓库关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">仓库总数</div>
+            <div class="kpi-value num">5</div>
+            <div class="kpi-delta">运营中 <b>4</b> · 待启用 <b class="text-warning">1</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">库位总数</div>
+            <div class="kpi-value num">109,780</div>
+            <div class="kpi-delta">跨 <b>4</b> 国 · 16 个库区</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">平均库容水位</div>
+            <div class="kpi-value num">70.3<span class="unit">%</span></div>
+            <div class="kpi-delta">超限 <b class="down">1</b> 仓 · 余量充足 <b>2</b> 仓</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">本周新增</div>
+            <div class="kpi-value num">1</div>
+            <div class="kpi-delta">YYZ-05 加拿大多伦多仓 · 配置中</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-status">仓库状态</label>
+          <select id="f-status" class="ctl" data-filter-col="9"><option>全部</option><option>运营中</option><option>待启用</option><option>已停用</option></select>
+        </div>
+        <div class="field">
+          <label for="f-country">国家 / 地区</label>
+          <select id="f-country" class="ctl" data-filter-col="2"><option>全部</option><option>美国</option><option>英国</option><option>德国</option><option>加拿大</option></select>
+        </div>
+        <div class="field">
+          <label for="f-cur">结算币种</label>
+          <select id="f-cur" class="ctl" data-filter-col="4"><option>全部</option><option>USD</option><option>GBP</option><option>EUR</option><option>CAD</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="仓库编码 / 名称 / 城市" data-filter-col="0,1,6">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-toast="已导出「仓库清单」CSV · 共 5 条" data-toast-type="success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary" type="button" data-action="wh:*:create">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          新建仓库
+        </button>
+      </div>
+
+      <!-- 仓库列表 -->
+      <section class="card" aria-labelledby="h-list">
+        <div class="section-head">
+          <h2 id="h-list">仓库列表</h2>
+          <span class="hint">共 5 条 · 点击编码查看档案</span>
+          <span class="hint" data-result-count>5</span>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">仓库列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">仓库编码</th>
+                <th scope="col">仓库名称</th>
+                <th scope="col">国家 / 地区</th>
+                <th scope="col">时区</th>
+                <th scope="col">币种</th>
+                <th scope="col" class="sortable">库位数</th>
+                <th scope="col">月台</th>
+                <th scope="col" class="sortable">库容水位</th>
+                <th scope="col" class="sortable">货主</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="wh"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>共 5 条 · 第 1 / 1 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <div class="row-2">
+        <!-- 新建仓库流程 -->
+        <section class="card" aria-labelledby="h-flow">
+          <div class="section-head">
+            <h2 id="h-flow">新建仓库流程</h2>
+            <span class="hint">全部完成才可启用</span>
+          </div>
+          <div class="stepper" style="margin-top:10px">
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">① 基础信息</div>
+                <div class="step-meta">仓库编码 / 名称 / 国家 / 时区 / 币种 / 详细地址</div>
+              </div>
+            </div>
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">② 库区与库位模板</div>
+                <div class="step-meta">选择 A–C / A–D / A–F 模板，或批量导入 Excel</div>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-dot" aria-hidden="true">3</span>
+              <div class="step-body">
+                <div class="step-title">③ 货主授权入驻</div>
+                <div class="step-meta">在货主管理页为该仓开通货主，并设定库位共享策略</div>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-dot" aria-hidden="true">4</span>
+              <div class="step-body">
+                <div class="step-title">④ 承运商交接配置</div>
+                <div class="step-meta">月台数、交接时段、各承运商截单时间</div>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-dot" aria-hidden="true">5</span>
+              <div class="step-body">
+                <div class="step-title">⑤ 投运启用</div>
+                <div class="step-meta">检查项全部通过后启用，开始接收 ASN 与出库单</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-sm" type="button" style="flex:1" data-toast="库区模板：A–C（3 区 / 约 12,000 位）、A–D（4 区 / 约 31,000 位）、A–F（6 区 / 约 48,000 位）">库区模板</button>
+            <button class="btn btn-sm btn-primary" type="button" data-action="wh:*:create">开始创建</button>
+          </div>
+        </section>
+
+        <!-- 运营提醒 -->
+        <section class="card" aria-labelledby="h-alert">
+          <div class="section-head">
+            <h2 id="h-alert">仓库运营提醒</h2>
+            <span class="hint num">4</span>
+          </div>
+          <div class="alert-list" style="margin-top:4px">
+            <div class="alert sev-high">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">BHX-03 库容 91.6% 已超限</div>
+                <div class="alert-meta">乐歌家居为独占货主无法混放腾挪 · 建议启用 EWR-02 分流</div>
+              </div>
+              <span class="alert-time">21m</span>
+            </div>
+            <div class="alert sev-mid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">YYZ-05 待启用已 3 天</div>
+                <div class="alert-meta">尚未开通货主、未生成库位 · 建议尽快完成配置</div>
+              </div>
+              <span class="alert-time">3d</span>
+            </div>
+            <div class="alert sev-mid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">跨仓报表时区口径</div>
+                <div class="alert-meta">4 仓分属 4 个时区，「今日」统计需按各仓本地时间切日</div>
+              </div>
+              <span class="alert-time">—</span>
+            </div>
+            <div class="alert sev-low">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16h.01"/><path d="M12 8v4"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">节假日影响</div>
+                <div class="alert-meta">BHX-03 12-25 圣诞休 · FRA-04 05-01 劳动节休，排班需避开</div>
+              </div>
+              <span class="alert-time">—</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="note-box" style="margin-top:12px">此前系统只有 4 个硬编码仓库名，无法新增、也没有仓库实体。本页把仓库提升为一等实体：新建走五步向导（基础信息 → 库区模板 → 货主授权 → 承运商交接 → 投运启用），顶栏的仓库选择器即由本页数据驱动。</div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+<script>
+  /* 顶部"新建仓库"按钮由 ACTIONS.wh.create 接管；此处仅兜底提示 */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('.btn-primary[data-action]') : null;
+    if (!b) return;
+    if (!window.WMS || !WMS.act) { if (window.wmsToast) wmsToast('数据层未加载，请刷新页面重试', 'warn'); }
+  });
+</script>
+</body>
+</html>

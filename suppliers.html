@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>供应商管理 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="suppliers">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">供应商管理<span>国内发货方 · 供货货主 · 到货绩效</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="供应商关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">合作供应商</div>
+            <div class="kpi-value num" data-kpi="count:supplier.ok">7</div>
+            <div class="kpi-delta">观察 <b>2</b> · 已停用 <b>1</b> · 合计 <b>10</b> 家</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">本月到货批次</div>
+            <div class="kpi-value num" data-kpi="sum:supplier.lotsM">115</div>
+            <div class="kpi-delta">累计 <b>901</b> 批次 · 覆盖 <b>4</b> 个仓</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">准时到货率</div>
+            <div class="kpi-value num">94.6<span class="unit">%</span></div>
+            <div class="kpi-delta">目标 <b>95%</b> · 差 <b class="down">0.4pp</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">短装 / 破损批次</div>
+            <div class="kpi-value num text-warning" data-kpi="sum:supplier.badM">7</div>
+            <div class="kpi-delta">短装 <b>5</b> · 破损 <b>2</b> · 待索赔 <b>2</b></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-st">合作状态</label>
+          <select id="f-st" class="ctl" data-filter-col="8"><option>全部</option><option>合作中</option><option>观察</option><option>已停用</option></select>
+        </div>
+        <div class="field">
+          <label for="f-cat">主要供货品类</label>
+          <select id="f-cat" class="ctl" data-filter-col="3"><option>全部</option><option>3C 电子</option><option>家居日用</option><option>五金工具</option><option>服饰鞋包</option><option>灯具照明</option><option>玩具母婴</option><option>运动户外</option><option>塑胶制品</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="供应商编码 / 名称 / 联系人" data-filter-col="0,1,2">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-export="供应商台账">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary" type="button" data-action="supplier:*:create">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          新建供应商
+        </button>
+      </div>
+
+      <!-- 供应商主表 -->
+      <section class="card" aria-labelledby="h-list">
+        <div class="section-head">
+          <h2 id="h-list">供应商列表</h2>
+          <span class="hint" data-count-src="supplier">共 10 条</span>
+          <span class="hint">· 演示数据</span>
+          <span class="hint" data-result-count>10</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="供应商合作状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">10</span></button>
+          <button class="tab" role="tab" aria-selected="false">合作中 <span class="tab-count">7</span></button>
+          <button class="tab" role="tab" aria-selected="false">观察 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">已停用 <span class="tab-count">1</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">供应商列表：编码、联系人、供货品类与货主、到货批次、准时到货率、短装率与合作状态</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">供应商编码</th>
+                <th scope="col" class="sortable">供应商名称</th>
+                <th scope="col">联系人 / 电话</th>
+                <th scope="col">主要供货品类</th>
+                <th scope="col">供货货主</th>
+                <th scope="col" class="sortable">累计到货批次</th>
+                <th scope="col" class="sortable">准时到货率</th>
+                <th scope="col" class="sortable">短装率</th>
+                <th scope="col">合作状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="supplier"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>共 10 条 · 每页 20 条 · 第 1 / 1 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <!-- 身份区分 + 到货异常 -->
+      <div class="table-grid">
+        <section class="card" aria-labelledby="h-rel">
+          <div class="section-head">
+            <h2 id="h-rel">供应商 vs 货主 · 身份区分</h2>
+            <span class="hint">入库单上的两个字段，含义完全不同</span>
+          </div>
+          <div class="check-list" style="margin-top:4px">
+            <div class="check">
+              <input type="checkbox" id="r1" checked disabled>
+              <div class="check-body">
+                <label class="check-title" for="r1">供应商 = 国内发货方 · 管到货</label>
+                <div class="check-help">ASN 上的 supplier 字段，货从谁那里发出。短装、破损、到货超时都记在供应商绩效上。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="r2" checked disabled>
+              <div class="check-body">
+                <label class="check-title" for="r2">货主 = 货权方 · 管账</label>
+                <div class="check-help">货主管理页（tenants）的维度：库存归属、库位共享策略、仓储与操作计费都按货主记账。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="r3" checked disabled>
+              <div class="check-body">
+                <label class="check-title" for="r3">同一主体可兼具两种身份</label>
+                <div class="check-help">SP-001 深圳致远电子 既在国内发货，也拥有货权，同时是货主 TN-00041，两份档案分别维护。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="r4" checked disabled>
+              <div class="check-body">
+                <label class="check-title" for="r4">发货方与货权方可以分离</label>
+                <div class="check-help">SP-008 广州美联塑胶制品 替货主 深圳致远电子 发货，验收合格后库存计入 TN-00041 台账。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="r5" disabled>
+              <div class="check-body">
+                <label class="check-title" for="r5">供应商可直接查看货主库存</label>
+                <div class="check-help">保持关闭：供应商只能看到自己发出的 ASN 与到货回执，看不到货权归属与在库库存。</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-exc">
+          <div class="section-head">
+            <h2 id="h-exc">到货异常记录</h2>
+            <span class="hint num">4</span>
+          </div>
+          <div class="alert-list" style="margin-top:4px">
+            <div class="alert sev-high">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">ASN-20261010-0131 短装 4 箱</div>
+                <div class="alert-meta">SP-004 宁波海诚日用 · SKU-99310 瑜伽垫 · LAX-01 · 应到 80 实到 76 箱</div>
+              </div>
+              <span class="alert-time">1d</span>
+            </div>
+            <div class="alert sev-high">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">外箱破损 2 箱待定损</div>
+                <div class="alert-meta">SP-010 佛山电器照明 · SKU-56012 LED 感应夜灯 · BHX-03 · 已隔离 24 件</div>
+              </div>
+              <span class="alert-time">2h</span>
+            </div>
+            <div class="alert sev-mid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">到货超时 6.5 小时</div>
+                <div class="alert-meta">SP-001 深圳致远电子 · ASN-20261011-0142 预约 14:00 · 实际 20:32 到仓</div>
+              </div>
+              <span class="alert-time">6h</span>
+            </div>
+            <div class="alert sev-low">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01"/><path d="M12 8v4"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">质检不合格批次待判定</div>
+                <div class="alert-meta">SP-003 东莞精工五金 · SKU-33478 不锈钢保温杯 · FRA-04 · 混批 88 件待定级</div>
+              </div>
+              <span class="alert-time">1d</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 绩效 + 业务说明 -->
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-perf">
+          <div class="section-head">
+            <h2 id="h-perf">供应商到货绩效</h2>
+            <span class="hint">Bullet Chart · 准时到货率 vs 目标 95% · 演示数据</span>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">东莞精工五金</span>
+              <span class="bullet-code num">SP-003 · 21 批/月</span>
+              <span class="bullet-pct">98.1%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="东莞精工五金 准时到货率 98.1%，达标，目标 95%">
+              <span class="bullet-zone z-bad" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:5%"></span>
+              <span class="bullet-zone z-good" style="left:95%;width:5%"></span>
+              <span class="bullet-measure" style="width:98.1%"></span><span class="bullet-target" style="left:95%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">深圳致远电子</span>
+              <span class="bullet-code num">SP-001 · 24 批/月</span>
+              <span class="bullet-pct">97.3%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="深圳致远电子 准时到货率 97.3%，达标，目标 95%">
+              <span class="bullet-zone z-bad" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:5%"></span>
+              <span class="bullet-zone z-good" style="left:95%;width:5%"></span>
+              <span class="bullet-measure" style="width:97.3%"></span><span class="bullet-target" style="left:95%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">广州美联塑胶制品</span>
+              <span class="bullet-code num">SP-008 · 8 批/月</span>
+              <span class="bullet-pct">96.8%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="广州美联塑胶制品 准时到货率 96.8%，达标，目标 95%">
+              <span class="bullet-zone z-bad" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:5%"></span>
+              <span class="bullet-zone z-good" style="left:95%;width:5%"></span>
+              <span class="bullet-measure" style="width:96.8%"></span><span class="bullet-target" style="left:95%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">中山灯饰照明</span>
+              <span class="bullet-code num">SP-006 · 9 批/月</span>
+              <span class="bullet-pct text-warning">93.8%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="中山灯饰照明 准时到货率 93.8%，未达标，目标 95%">
+              <span class="bullet-zone z-bad" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:5%"></span>
+              <span class="bullet-zone z-good" style="left:95%;width:5%"></span>
+              <span class="bullet-measure" style="width:93.8%"></span><span class="bullet-target" style="left:95%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">宁波海诚日用</span>
+              <span class="bullet-code num">SP-004 · 12 批/月</span>
+              <span class="bullet-pct text-warning">88.4%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="宁波海诚日用 准时到货率 88.4%，未达标，目标 95%">
+              <span class="bullet-zone z-bad" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:5%"></span>
+              <span class="bullet-zone z-good" style="left:95%;width:5%"></span>
+              <span class="bullet-measure" style="width:88.4%"></span><span class="bullet-target" style="left:95%"></span>
+            </div>
+          </div>
+          <p class="bullet-legend">
+            <span><i style="background:var(--range-bad)"></i>&lt;90% 未达标</span>
+            <span><i style="background:var(--range-mid)"></i>90–95% 接近</span>
+            <span><i style="background:var(--range-good)"></i>≥95% 达标</span>
+            <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>目标 95%</span>
+          </p>
+        </section>
+
+        <section class="card" aria-labelledby="h-note">
+          <div class="section-head">
+            <h2 id="h-note">业务说明</h2>
+            <span class="hint">演示数据</span>
+          </div>
+          <div class="note-box info" style="margin-top:8px">
+            供应商 ≠ 货主：供应商是国内发货方，只影响入库段（到货及时性、短装破损率）；货主是货权方，决定库存归属、库位共享策略与计费口径。同一主体可以兼具两种身份（SP-001 深圳致远电子 同时是货主 TN-00041），也可以分离（SP-008 广州美联塑胶制品 替 深圳致远电子 发货）。到货绩效按供应商统计，不影响货主账本。
+          </div>
+          <dl class="dl" style="margin-top:8px">
+            <dt>准时到货率</dt><dd>按 ASN 约定 ETA 按时到仓 ÷ 总到货批次</dd>
+            <dt>短装率</dt><dd>实收箱数少于预报箱数的批次占比</dd>
+            <dt>本页范围</dt><dd>10 家供应商 · 7 家同时是货主</dd>
+            <dt>数据口径</dt><dd>静态原型 · 仅写入浏览器 localStorage</dd>
+          </dl>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+<script src="assets/mod-supplier.js"></script>
+</body>
+</html>

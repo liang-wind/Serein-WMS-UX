@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>系统设置 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="settings">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">系统设置<span>库存策略 · 通知 · 权限 · 集成</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- 基础信息 -->
+      <section class="card" aria-labelledby="h-basic">
+        <div class="section-head">
+          <h2 id="h-basic">基础信息</h2>
+          <span class="hint">影响单据编号与时间显示</span>
+        </div>
+
+        <form class="form-grid" style="margin-top:12px" onsubmit="return false">
+          <div class="form-row">
+            <label for="s-name">企业名称</label>
+            <input id="s-name" class="ctl" type="text" value="环宇跨境供应链有限公司">
+          </div>
+          <div class="form-row">
+            <label for="s-code">企业编码</label>
+            <input id="s-code" class="ctl num" type="text" value="HY-GLB-0041" readonly>
+            <span class="help">创建后不可修改</span>
+          </div>
+          <div class="form-row">
+            <label for="s-tz">默认时区</label>
+            <select id="s-tz" class="ctl">
+              <option>UTC-8 美西（PST/PDT）</option>
+              <option>UTC-5 美东（EST/EDT）</option>
+              <option>UTC+0 英国（GMT/BST）</option>
+              <option>UTC+1 德国（CET/CEST）</option>
+            </select>
+            <span class="help">用于报表统计口径</span>
+          </div>
+          <div class="form-row">
+            <label for="s-lang">界面语言</label>
+            <select id="s-lang" class="ctl">
+              <option>简体中文</option>
+              <option>English</option>
+              <option>日本語</option>
+            </select>
+          </div>
+          <div class="form-row span-2">
+            <label for="s-addr">总部地址</label>
+            <input id="s-addr" class="ctl" type="text" value="深圳市宝安区航城大道 12 号 A 座">
+          </div>
+          <div class="span-2" style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn" type="button" data-reset>还原</button>
+            <button class="btn btn-primary" type="button" data-action="sys:save">保存更改</button>
+          </div>
+        </form>
+      </section>
+
+      <div class="row-2">
+        <!-- 库存策略 -->
+        <section class="card" aria-labelledby="h-policy">
+          <div class="section-head">
+            <h2 id="h-policy">库存与作业策略</h2>
+            <span class="hint">开关即时生效</span>
+          </div>
+
+          <div style="margin-top:6px">
+            <div class="check">
+              <input type="checkbox" id="p1" checked>
+              <div class="check-body">
+                <label class="check-title" for="p1">启用先进先出（FIFO）</label>
+                <div class="check-help">同 SKU 按入库批次先后分配出库</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="p2" checked>
+              <div class="check-body">
+                <label class="check-title" for="p2">超卖拦截</label>
+                <div class="check-help">可用库存低于 0 时拒绝下单占用</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="p3">
+              <div class="check-body">
+                <label class="check-title" for="p3">自动分配波次</label>
+                <div class="check-help">按仓库 + 承运商每 15 分钟自动合波（不跨货主）</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="p4" checked>
+              <div class="check-body">
+                <label class="check-title" for="p4">上架前必须质检</label>
+                <div class="check-help">收货完成后强制进入验收环节</div>
+              </div>
+            </div>
+
+            <div class="check">
+              <div class="check-body">
+                <label class="check-title" for="p5">低库存自动预警</label>
+                <div class="check-help">可用量低于安全线时推送告警（按货主分别计算）</div>
+              </div>
+              <button id="p5" class="switch" type="button" role="switch" aria-checked="true" aria-label="低库存自动预警"></button>
+            </div>
+            <div class="check">
+              <div class="check-body">
+                <label class="check-title" for="p6">库容超限告警</label>
+                <div class="check-help">库容利用率 &gt; 90% 时通知运营</div>
+              </div>
+              <button id="p6" class="switch" type="button" role="switch" aria-checked="true" aria-label="库容超限告警"></button>
+            </div>
+            <div class="check">
+              <div class="check-body">
+                <label class="check-title" for="p7">夜间自动盘点</label>
+                <div class="check-help">02:00 对 A 区执行循环盘点</div>
+              </div>
+              <button id="p7" class="switch" type="button" role="switch" aria-checked="false" aria-label="夜间自动盘点"></button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 危险操作 + 集成 -->
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <section class="card" aria-labelledby="h-int">
+            <div class="section-head">
+              <h2 id="h-int">渠道与承运商集成</h2>
+              <span class="hint num">8</span>
+            </div>
+            <div style="margin-top:4px">
+              <div class="slot">
+                <div class="slot-body">
+                  <div class="slot-name">OMS 订单接入（Amazon / Shopify）</div>
+                  <div class="slot-sub">最近同步 2 分钟前</div>
+                </div>
+                <span class="slot-load text-success">已连接</span>
+              </div>
+              <div class="slot">
+                <div class="slot-body">
+                  <div class="slot-name">Temu 半托管</div>
+                  <div class="slot-sub">Token 将于 3 天后过期</div>
+                </div>
+                <span class="slot-load text-warning">待续期</span>
+              </div>
+              <div class="slot">
+                <div class="slot-body">
+                  <div class="slot-name">货主开放 API / Webhook</div>
+                  <div class="slot-sub">已授权 18 家 · 今日调用 12.4 万次</div>
+                </div>
+                <span class="slot-load text-success">已连接</span>
+              </div>
+              <div class="slot">
+                <div class="slot-body">
+                  <div class="slot-name">UPS / FedEx / DHL</div>
+                  <div class="slot-sub">面单服务正常</div>
+                </div>
+                <span class="slot-load text-success">已连接</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm" type="button" style="flex:1" data-toast="已触发全量同步 · 8 个集成">立即同步</button>
+              <button class="btn btn-sm" type="button" data-toast="集成配置面板已打开（演示环境）">配置</button>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="h-danger">
+            <div class="section-head">
+              <h2 id="h-danger">危险操作</h2>
+              <span class="hint text-danger">需二次确认</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+              <button class="btn" type="button" data-confirm="清空缓存将导致在线 PDA 短暂重连（约 5 秒），同时重置演示数据。" data-title="清空系统缓存" data-ok="清空缓存" data-action="sys:reset">清空缓存</button>
+              <button class="btn btn-danger" type="button" data-confirm="此操作将停用全渠道订单同步，进行中的波次不受影响，但新订单不再进入。确认继续？" data-title="停用订单同步" data-ok="确认停用" data-danger data-toast="订单同步已停用 · 已记录审计日志">停用订单同步</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 用户与权限 -->
+      <section class="card" aria-labelledby="h-user">
+        <div class="section-head">
+          <h2 id="h-user">用户与权限</h2>
+          <span class="hint">8 名成员</span>
+          <span class="hint" data-result-count>5</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="用户角色筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">8</span></button>
+          <button class="tab" role="tab" aria-selected="false">管理员 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">主管 <span class="tab-count">3</span></button>
+          <button class="tab" role="tab" aria-selected="false">操作员 <span class="tab-count">3</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">用户与权限列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">姓名</th>
+                <th scope="col">角色</th>
+                <th scope="col">管辖仓库</th>
+                <th scope="col">数据范围 · 货主</th>
+                <th scope="col">手机号</th>
+                <th scope="col" class="sortable">最近登录</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="usr"></tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button class="btn" type="button" data-toast="权限模板：4 套（管理员 / 主管 / 操作员 / 只读）· 支持按货主限定数据范围">权限模板</button>
+          <button class="btn btn-primary" type="button" data-form="usr">邀请成员</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>

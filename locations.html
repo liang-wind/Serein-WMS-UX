@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>库位管理 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="locations" data-wh-col="1">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">库位管理<span>库区 · 货架 · 占用率 · 热力分析</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <section aria-label="库位关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">库位总数</div>
+            <div class="kpi-value num">48,620</div>
+            <div class="kpi-delta">6 个库区 · A–F</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">已占用</div>
+            <div class="kpi-value num">41,208</div>
+            <div class="kpi-delta">占用率 <b>84.8%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">可用库位</div>
+            <div class="kpi-value num text-success">5,940</div>
+            <div class="kpi-delta">其中拣货位 <b>1,206</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">锁定 / 冻结</div>
+            <div class="kpi-value num text-warning">1,472</div>
+            <div class="kpi-delta">盘点锁定 1,180 · 故障 292</div>
+          </article>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-wh">仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="1"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-zone">库区</label>
+          <select id="f-zone" class="ctl" data-filter-col="2"><option>全部库区</option><option>A 区</option><option>B 区</option><option>C 区</option><option>D 区</option><option>E 区</option><option>F 区</option></select>
+        </div>
+        <div class="field">
+          <label for="f-ltype">库位类型</label>
+          <select id="f-ltype" class="ctl" data-filter-col="3"><option>全部类型</option><option>存储位</option><option>拣货位</option><option>暂存位</option><option>退货位</option></select>
+        </div>
+        <div class="field">
+          <label for="f-lst">占用状态</label>
+          <select id="f-lst" class="ctl" data-filter-col="7"><option>全部</option><option>空闲</option><option>部分</option><option>满载</option><option>锁定</option></select>
+        </div>
+        <div class="field">
+          <label for="f-own">货主归属</label>
+          <select id="f-own" class="ctl" data-filter-col="4"><option>全部</option><option>混放</option><option>独占</option><option>公共区</option></select>
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-confirm="将上传库位 Excel 模板并覆盖同编码库位。" data-title="批量导入库位" data-ok="选择文件" data-toast="已解析 1,024 条库位 · 0 条编码冲突">批量导入</button>
+        <button class="btn btn-primary" type="button" data-form="loc">新建库位</button>
+      </div>
+
+      <!-- 库区热力 -->
+      <section class="card" aria-labelledby="h-map">
+        <div class="section-head">
+          <h2 id="h-map">库区占用热力</h2>
+          <span class="hint">LAX-01 · 点击格子查看库位</span>
+          <button class="more btn-link" type="button" data-toast="已按占用率降序重排库区">按占用率排序</button>
+        </div>
+
+        <div class="wh-map" style="margin-top:10px">
+          <div class="wh-zone">
+            <div class="zone-head">
+              <span class="zone-name">A 区</span><span class="zone-sub">快消拣货</span>
+              <span class="zone-pct text-warning">92%</span>
+            </div>
+            <div class="cells">
+              <button class="cell c-full" type="button" title="A-01-01 · 满载 · 保温杯" aria-label="A-01-01 满载"></button>
+              <button class="cell c-full" type="button" title="A-01-02 · 满载 · 保温杯" aria-label="A-01-02 满载"></button>
+              <button class="cell c-part" type="button" title="A-01-03 · 部分占用 · 折叠箱" aria-label="A-01-03 部分占用"></button>
+              <button class="cell c-full" type="button" title="A-01-04 · 满载 · 感应夜灯" aria-label="A-01-04 满载"></button>
+              <button class="cell c-lock" type="button" title="A-01-05 · 锁定 · 待盘点" aria-label="A-01-05 锁定"></button>
+              <button class="cell c-full" type="button" title="A-01-06 · 满载 · 自拍杆" aria-label="A-01-06 满载"></button>
+              <button class="cell c-part" type="button" title="A-01-07 · 部分占用 · 窗帘" aria-label="A-01-07 部分占用"></button>
+              <button class="cell c-full" type="button" title="A-01-08 · 满载 · 漏水报警器" aria-label="A-01-08 满载"></button>
+              <button class="cell c-full" type="button" title="A-02-01 · 满载 · 杯盖" aria-label="A-02-01 满载"></button>
+              <button class="cell c-part" type="button" title="A-02-02 · 部分占用 · 数据线" aria-label="A-02-02 部分占用"></button>
+              <button class="cell c-full" type="button" title="A-02-03 · 满载 · 折叠箱" aria-label="A-02-03 满载"></button>
+              <button class="cell c-full" type="button" title="A-02-04 · 满载 · 面板灯" aria-label="A-02-04 满载"></button>
+              <button class="cell c-part" type="button" title="A-02-05 · 部分占用 · 杯型配件" aria-label="A-02-05 部分占用"></button>
+              <button class="cell c-full" type="button" title="A-02-06 · 满载 · 台灯" aria-label="A-02-06 满载"></button>
+              <button class="cell c-lock" type="button" title="A-02-07 · 锁定 · 设备异常" aria-label="A-02-07 锁定"></button>
+              <button class="cell c-part" type="button" title="A-02-08 · 部分占用 · 家具" aria-label="A-02-08 部分占用"></button>
+            </div>
+          </div>
+
+          <div class="wh-zone">
+            <div class="zone-head">
+              <span class="zone-name">B 区</span><span class="zone-sub">3C 电子</span>
+              <span class="zone-pct">78%</span>
+            </div>
+            <div class="cells">
+              <button class="cell c-part" type="button" title="B-01-01 · 部分占用 · 充电头" aria-label="B-01-01 部分占用"></button>
+              <button class="cell c-full" type="button" title="B-01-02 · 满载 · 蓝牙耳机" aria-label="B-01-02 满载"></button>
+              <button class="cell c-part" type="button" title="B-01-03 · 部分占用 · 手机壳" aria-label="B-01-03 部分占用"></button>
+              <button class="cell c-free" type="button" title="B-01-04 · 空闲 · 可用库位" aria-label="B-01-04 空闲"></button>
+              <button class="cell c-part" type="button" title="B-01-05 · 部分占用 · 路由器" aria-label="B-01-05 部分占用"></button>
+              <button class="cell c-full" type="button" title="B-01-06 · 满载 · 摄像头" aria-label="B-01-06 满载"></button>
+              <button class="cell c-free" type="button" title="B-01-07 · 空闲 · 可用库位" aria-label="B-01-07 空闲"></button>
+              <button class="cell c-part" type="button" title="B-01-08 · 部分占用 · 键盘" aria-label="B-01-08 部分占用"></button>
+              <button class="cell c-free" type="button" title="B-02-01 · 空闲 · 可用库位" aria-label="B-02-01 空闲"></button>
+              <button class="cell c-part" type="button" title="B-02-02 · 部分占用 · 鼠标" aria-label="B-02-02 部分占用"></button>
+              <button class="cell c-full" type="button" title="B-02-03 · 满载 · 显示器支架" aria-label="B-02-03 满载"></button>
+              <button class="cell c-part" type="button" title="B-02-04 · 部分占用 · Hub 扩展坞" aria-label="B-02-04 部分占用"></button>
+              <button class="cell c-free" type="button" title="B-02-05 · 空闲 · 可用库位" aria-label="B-02-05 空闲"></button>
+              <button class="cell c-part" type="button" title="B-02-06 · 部分占用 · 读卡器" aria-label="B-02-06 部分占用"></button>
+              <button class="cell c-free" type="button" title="B-02-07 · 空闲 · 可用库位" aria-label="B-02-07 空闲"></button>
+              <button class="cell c-part" type="button" title="B-02-08 · 部分占用 · 散热器" aria-label="B-02-08 部分占用"></button>
+            </div>
+          </div>
+
+          <div class="wh-zone">
+            <div class="zone-head">
+              <span class="zone-name">C 区</span><span class="zone-sub">大件存储</span>
+              <span class="zone-pct">64%</span>
+            </div>
+            <div class="cells">
+              <button class="cell c-part" type="button" title="C-01-01 · 部分占用 · 窗帘" aria-label="C-01-01 部分占用"></button>
+              <button class="cell c-free" type="button" title="C-01-02 · 空闲 · 可用库位" aria-label="C-01-02 空闲"></button>
+              <button class="cell c-part" type="button" title="C-01-03 · 部分占用 · 折叠箱" aria-label="C-01-03 部分占用"></button>
+              <button class="cell c-free" type="button" title="C-01-04 · 空闲 · 可用库位" aria-label="C-01-04 空闲"></button>
+              <button class="cell c-full" type="button" title="C-01-05 · 满载 · 收纳柜" aria-label="C-01-05 满载"></button>
+              <button class="cell c-free" type="button" title="C-01-06 · 空闲 · 可用库位" aria-label="C-01-06 空闲"></button>
+              <button class="cell c-part" type="button" title="C-01-07 · 部分占用 · 置物架" aria-label="C-01-07 部分占用"></button>
+              <button class="cell c-free" type="button" title="C-01-08 · 空闲 · 可用库位" aria-label="C-01-08 空闲"></button>
+              <button class="cell c-free" type="button" title="C-02-01 · 空闲 · 可用库位" aria-label="C-02-01 空闲"></button>
+              <button class="cell c-part" type="button" title="C-02-02 · 部分占用 · 露营椅" aria-label="C-02-02 部分占用"></button>
+              <button class="cell c-free" type="button" title="C-02-03 · 空闲 · 可用库位" aria-label="C-02-03 空闲"></button>
+              <button class="cell c-free" type="button" title="C-02-04 · 空闲 · 可用库位" aria-label="C-02-04 空闲"></button>
+              <button class="cell c-part" type="button" title="C-02-05 · 部分占用 · 台灯" aria-label="C-02-05 部分占用"></button>
+              <button class="cell c-free" type="button" title="C-02-06 · 空闲 · 可用库位" aria-label="C-02-06 空闲"></button>
+              <button class="cell c-lock" type="button" title="C-02-07 · 锁定 · 待盘点" aria-label="C-02-07 锁定"></button>
+              <button class="cell c-free" type="button" title="C-02-08 · 空闲 · 可用库位" aria-label="C-02-08 空闲"></button>
+            </div>
+          </div>
+        </div>
+
+        <p class="map-legend">
+          <span><i style="background:var(--color-success)"></i>满载</span>
+          <span><i style="background:var(--color-warning)"></i>部分占用</span>
+          <span><i style="background:#E2E5E9"></i>空闲</span>
+          <span><i style="background:var(--color-info)"></i>盘点锁定</span>
+          <span><i style="background:var(--color-danger)"></i>故障冻结</span>
+        </p>
+      </section>
+
+      <!-- 库位列表 -->
+      <section class="card" aria-labelledby="h-list">
+        <div class="section-head">
+          <h2 id="h-list">库位列表</h2>
+          <span class="hint" data-count-src="loc">共 48,620 条</span>
+          <span class="hint" data-result-count>7</span>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">库位列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">库位编码</th>
+                <th scope="col">仓库</th>
+                <th scope="col">库区</th>
+                <th scope="col">类型</th>
+                <th scope="col">货主归属</th>
+                <th scope="col">存放 SKU</th>
+                <th scope="col" class="sortable">容积使用</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="loc"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>每页 50 条 · 第 1 / 973 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button">2</button>
+          <button class="page-btn" type="button">3</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>

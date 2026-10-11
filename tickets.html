@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>异常工单中心 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="tickets" data-wh-col="4">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">异常工单中心<span>异常收敛 · SLA 计时 · 闭环跟进</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="工单关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">待处理工单</div>
+            <div class="kpi-value num">15</div>
+            <div class="kpi-delta">未派单 <b>3</b> · 高严重 <b>5</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">已超时（SLA 违约）</div>
+            <div class="kpi-value num text-danger">6</div>
+            <div class="kpi-delta">最长超时 <b class="down">17h</b> · 均已升级</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">今日新增</div>
+            <div class="kpi-value num">9</div>
+            <div class="kpi-delta">缺货 3 · 地址错误 2 · 其他 4</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">本周闭环率</div>
+            <div class="kpi-value num text-warning">82<span class="unit">%</span></div>
+            <div class="kpi-delta">目标 85% · <b class="down">↓ 3%</b></div>
+          </article>
+        </div>
+        <span class="hint">以上均为演示数据 · 统计截至 2026-10-11 18:40</span>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-type">工单类型</label>
+          <select id="f-type" class="ctl" data-filter-col="1"><option>全部类型</option><option>缺货</option><option>地址错误</option><option>轨迹停滞</option><option>货权不符</option><option>破损</option><option>盘点差异</option><option>收货超时</option></select>
+        </div>
+        <div class="field">
+          <label for="f-wh">责任仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="4"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-sev">严重程度</label>
+          <select id="f-sev" class="ctl" data-filter-col="5"><option>全部</option><option>高</option><option>中</option><option>低</option></select>
+        </div>
+        <div class="field">
+          <label for="f-st">处理状态</label>
+          <select id="f-st" class="ctl" data-filter-col="8"><option>全部</option><option>待处理</option><option>处理中</option><option>待确认</option><option>已关闭</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="工单号 / 关联单据" data-filter-col="0,2">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-toast="导出任务已提交 · 当前筛选范围内工单（含 SLA 明细）预计 1 分钟内可在下载中心获取">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary" type="button" data-confirm="将把当前筛选结果中未派单的工单（本页 3 张）按责任仓库当班负载自动分配给操作员，指派后 SLA 计时不重置。" data-title="批量指派" data-ok="立即指派" data-toast="3 张未派单工单已分配 · TK-20261011-0346 / TK-20261011-0344 / TK-20261010-0336 转入处理中">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          批量指派
+        </button>
+      </div>
+
+      <!-- 主表：工单列表（整宽） -->
+      <section class="card" aria-labelledby="h-list">
+        <div class="section-head">
+          <h2 id="h-list">工单列表</h2>
+          <span class="hint">共 47 条 · 每页 12 条 · 演示数据</span>
+          <span class="hint" data-result-count>47</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="工单状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">47</span></button>
+          <button class="tab" role="tab" aria-selected="false">待处理 <span class="tab-count">15</span></button>
+          <button class="tab" role="tab" aria-selected="false">处理中 <span class="tab-count">9</span></button>
+          <button class="tab" role="tab" aria-selected="false">待确认 <span class="tab-count">6</span></button>
+          <button class="tab" role="tab" aria-selected="false">已关闭 <span class="tab-count">17</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">异常工单列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">工单号</th>
+                <th scope="col">类型</th>
+                <th scope="col">关联单据</th>
+                <th scope="col">货主</th>
+                <th scope="col">责任仓库</th>
+                <th scope="col">严重程度</th>
+                <th scope="col">SLA 剩余 / 已超时</th>
+                <th scope="col">责任人</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-strong num">TK-20261011-0347</td>
+                <td><span class="badge b-neutral">地址错误</span></td>
+                <td class="td-num">SO-20261011-0642<span class="hint"> Shopify 订单</span></td>
+                <td>深圳致远电子<span class="hint num"> TN-00041</span></td>
+                <td class="td-num">EWR-02<span class="hint"> 美东新泽港仓</span></td>
+                <td><span class="badge b-err">高</span></td>
+                <td class="td-num text-warning">剩余 50m</td>
+                <td>王强</td>
+                <td><span class="badge b-ing">处理中</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="TK-20261011-0347 跟进已记录 · 已联系承运商拦截改址，SO-20261011-0642 待客户回传新地址">跟进</button>
+                  <button class="btn-link" type="button" data-confirm="升级后由值班主管接管 TK-20261011-0347，原处理人王强转为协作，并抄送货主深圳致远电子。" data-title="升级工单" data-ok="升级" data-toast="TK-20261011-0347 已升级至值班主管 · 抄送货主深圳致远电子">升级</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261011-0346</td>
+                <td><span class="badge b-neutral">缺货</span></td>
+                <td class="td-num">SO-20261011-0631<span class="hint"> Amazon 订单</span></td>
+                <td>中山灯饰照明<span class="hint num"> TN-00123</span></td>
+                <td class="td-num">LAX-01<span class="hint"> 美西洛杉矶仓</span></td>
+                <td><span class="badge b-err">高</span></td>
+                <td class="td-num text-danger">已超时 3h 20m</td>
+                <td class="text-muted">待派单</td>
+                <td><span class="badge b-wait">待处理</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-confirm="将 TK-20261011-0346 指派给 LAX-01 当班操作员李敏，指派后 SLA 计时不重置。" data-title="指派处理人" data-ok="指派" data-toast="TK-20261011-0346 已指派给 李敏 · 待处理 → 处理中">指派</button>
+                  <button class="btn-link" type="button" data-confirm="TK-20261011-0346 已超时 3h 20m，升级后由值班主管介入并抄送货主中山灯饰照明。" data-title="升级超时工单" data-ok="升级" data-toast="TK-20261011-0346 已升级 · 值班主管已受理">升级</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261011-0345</td>
+                <td><span class="badge b-neutral">轨迹停滞</span></td>
+                <td class="td-num">1Z12345E0310864229<span class="hint"> UPS 运单 · Temu</span></td>
+                <td>安克创新科技<span class="hint num"> TN-00073</span></td>
+                <td class="td-num">EWR-02<span class="hint"> 美东新泽港仓</span></td>
+                <td><span class="badge b-wait">中</span></td>
+                <td class="td-num">剩余 3h 00m</td>
+                <td>赵磊</td>
+                <td><span class="badge b-ing">处理中</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="TK-20261011-0345 跟进已记录 · UPS 反馈包裹滞留 EWR-02 分拨中心 38h">跟进</button>
+                  <button class="btn-link" type="button" data-toast="已向 UPS 发送催办 · 参考号 1Z12345E0310864229，要求 4h 内回复扫描记录">催承运商</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261011-0344</td>
+                <td><span class="badge b-neutral">货权不符</span></td>
+                <td class="td-num">ASN-20261009-0186<span class="hint"> 海运 ASN</span></td>
+                <td>义乌恒发家居<span class="hint num"> TN-00086</span></td>
+                <td class="td-num">LAX-01<span class="hint"> 美西洛杉矶仓</span></td>
+                <td><span class="badge b-wait">中</span></td>
+                <td class="td-num text-warning">剩余 10m</td>
+                <td class="text-muted">待派单</td>
+                <td><span class="badge b-wait">待处理</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-confirm="将 TK-20261011-0344 指派给 LAX-01 当班操作员李敏，需核对 ASN 预报与入库批次唛头。" data-title="指派处理人" data-ok="指派" data-toast="TK-20261011-0344 已指派给 李敏 · 待处理 → 处理中">指派</button>
+                  <button class="btn-link" type="button" data-confirm="TK-20261011-0344 距 SLA 截止仅 10m，升级后由值班主管接管并抄送货主。" data-title="升级工单" data-ok="升级" data-toast="TK-20261011-0344 已升级至值班主管 · 抄送货主义乌恒发家居">升级</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261011-0343</td>
+                <td><span class="badge b-neutral">破损</span></td>
+                <td class="td-num">SO-20261010-0497<span class="hint"> eBay 订单</span></td>
+                <td>乐歌家居科技<span class="hint num"> TN-00058</span></td>
+                <td class="td-num">BHX-03<span class="hint"> 英国伯明翰仓</span></td>
+                <td><span class="badge b-wait">中</span></td>
+                <td class="td-num text-danger">已超时 13h 35m</td>
+                <td>孙悦</td>
+                <td><span class="badge b-ing">处理中</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="TK-20261011-0343 跟进已记录 · 破损照片 6 张已上传，等待 BHX-03 质检复核">跟进</button>
+                  <button class="btn-link" type="button" data-confirm="将对 TK-20261011-0343 发起物流索赔，凭证同步货主乐歌家居科技。" data-title="发起索赔" data-ok="提交索赔" data-toast="索赔已提交 · TK-20261011-0343 责任方为末端派送环节，预计 3 个工作日反馈">索赔</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261011-0342</td>
+                <td><span class="badge b-neutral">盘点差异</span></td>
+                <td class="td-num">CC-202610-0031<span class="hint"> 循环盘点单</span></td>
+                <td>宁波海诚日用<span class="hint num"> TN-00094</span></td>
+                <td class="td-num">FRA-04<span class="hint"> 德国法兰克福仓</span></td>
+                <td><span class="badge b-neutral">低</span></td>
+                <td class="td-num text-muted">已暂停 · 等确认</td>
+                <td>周航</td>
+                <td><span class="badge b-wait">待确认</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="已向货主宁波海诚日用推送确认提醒 · TK-20261011-0342 盘点差异 12 件">催确认</button>
+                  <button class="btn-link" type="button" data-toast="TK-20261011-0342 凭证已打开 · 盘点表 CC-202610-0031 + 实拍照片 4 张">查看凭证</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261011-0341</td>
+                <td><span class="badge b-neutral">轨迹停滞</span></td>
+                <td class="td-num">771288990123<span class="hint"> FedEx 运单 · Shopify</span></td>
+                <td>乐歌家居科技<span class="hint num"> TN-00058</span></td>
+                <td class="td-num">FRA-04<span class="hint"> 德国法兰克福仓</span></td>
+                <td><span class="badge b-neutral">低</span></td>
+                <td class="td-num">剩余 15h 25m</td>
+                <td>郑然</td>
+                <td><span class="badge b-ing">处理中</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="TK-20261011-0341 跟进已记录 · FedEx 确认包裹已抵达 FRA-04 口岸，预计 2 天内恢复轨迹">跟进</button>
+                  <button class="btn-link" type="button" data-toast="已催办乐歌家居科技确认处理方案 · TK-20261011-0341（改派 or 退回）">催货主</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261010-0339</td>
+                <td><span class="badge b-neutral">收货超时</span></td>
+                <td class="td-num">ASN-20261008-0153<span class="hint"> 海运 ASN</span></td>
+                <td>东莞精工五金<span class="hint num"> TN-00108</span></td>
+                <td class="td-num">BHX-03<span class="hint"> 英国伯明翰仓</span></td>
+                <td><span class="badge b-wait">中</span></td>
+                <td class="td-num text-muted">已暂停 · 等确认</td>
+                <td>吴楠</td>
+                <td><span class="badge b-wait">待确认</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="已催办东莞精工五金确认收货超时方案 · TK-20261010-0339 已等待 2 天">催确认</button>
+                  <button class="btn-link" type="button" data-toast="TK-20261010-0339 凭证已打开 · ASN-20261008-0153 月台预约记录 + 压车照片 3 张">查看凭证</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261010-0337</td>
+                <td><span class="badge b-neutral">缺货</span></td>
+                <td class="td-num">SO-20261010-0466<span class="hint"> Amazon 订单</span></td>
+                <td>泉州鞋业外贸<span class="hint num"> TN-00102</span></td>
+                <td class="td-num">LAX-01<span class="hint"> 美西洛杉矶仓</span></td>
+                <td><span class="badge b-wait">中</span></td>
+                <td class="td-num text-danger">已超时 17h 00m</td>
+                <td>何静</td>
+                <td><span class="badge b-ing">处理中</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="TK-20261010-0337 跟进已记录 · 已锁定 LAX-01 在途库存 24 件">跟进</button>
+                  <button class="btn-link" type="button" data-confirm="将通知货主泉州鞋业外贸补货 36 件，并向渠道端建议对 SO-20261010-0466 延迟发货 48h。" data-title="通知补货" data-ok="通知货主" data-toast="补货通知已发送 · TK-20261010-0337 建议渠道端对 SO-20261010-0466 延迟发货">通知补货</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261010-0336</td>
+                <td><span class="badge b-neutral">地址错误</span></td>
+                <td class="td-num">SO-20261009-0412<span class="hint"> eBay 订单</span></td>
+                <td>苏州明达玩具<span class="hint num"> TN-00115</span></td>
+                <td class="td-num">BHX-03<span class="hint"> 英国伯明翰仓</span></td>
+                <td><span class="badge b-neutral">低</span></td>
+                <td class="td-num text-danger">已超时 2h 20m</td>
+                <td class="text-muted">待派单</td>
+                <td><span class="badge b-wait">待处理</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-confirm="将 TK-20261010-0336 指派给 BHX-03 当班操作员吴楠，需联系收件人获取有效地址。" data-title="指派处理人" data-ok="指派" data-toast="TK-20261010-0336 已指派给 吴楠 · 待处理 → 处理中">指派</button>
+                  <button class="btn-link" type="button" data-confirm="TK-20261010-0336 已超时 2h 20m，超期未处理将由值班主管介入地址纠错。" data-title="升级工单" data-ok="升级" data-toast="TK-20261010-0336 已升级 · 值班主管介入处理地址纠错">升级</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261009-0330</td>
+                <td><span class="badge b-neutral">货权不符</span></td>
+                <td class="td-num">ASN-20261005-0141<span class="hint"> 铁运 ASN</span></td>
+                <td>深圳致远电子<span class="hint num"> TN-00041</span></td>
+                <td class="td-num">LAX-01<span class="hint"> 美西洛杉矶仓</span></td>
+                <td><span class="badge b-err">高</span></td>
+                <td class="td-num text-success">按时 · 3h 05m</td>
+                <td>王强</td>
+                <td><span class="badge b-done">已关闭</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="TK-20261009-0330 复盘已生成 · 根因：ASN 与到货批次唛头不一致，已优化入库核验规则">复盘</button>
+                  <button class="btn-link" type="button" data-toast="TK-20261009-0330 凭证打包完成 · 含货主确认函与整改记录，预计 1 分钟内可下载">导出凭证</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong num">TK-20261009-0329</td>
+                <td><span class="badge b-neutral">破损</span></td>
+                <td class="td-num">SO-20261007-0358<span class="hint"> Amazon 订单</span></td>
+                <td>安克创新科技<span class="hint num"> TN-00073</span></td>
+                <td class="td-num">EWR-02<span class="hint"> 美东新泽港仓</span></td>
+                <td><span class="badge b-wait">中</span></td>
+                <td class="td-num text-danger">超时 · 4h 12m</td>
+                <td>孙悦</td>
+                <td><span class="badge b-done">已关闭</span></td>
+                <td>
+                  <button class="btn-link" type="button" data-toast="TK-20261009-0329 复盘已生成 · 根因：末端派送破损，已对承运商处罚并调整包装标准">复盘</button>
+                  <button class="btn-link" type="button" data-confirm="归档后 TK-20261009-0329 不再出现在默认列表，仍可在「已关闭」筛选与审计日志中查询。" data-title="归档工单" data-ok="归档" data-toast="TK-20261009-0329 已归档 · 审计日志保留 180 天">归档</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>每页 12 条 · 第 1 / 4 页（共 47 条）</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button">2</button>
+          <button class="page-btn" type="button">3</button>
+          <button class="page-btn" type="button">4</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <!-- SLA 达成 + 异常类型分布 -->
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-sla">
+          <div class="section-head">
+            <h2 id="h-sla">SLA 达成情况</h2>
+            <span class="hint">按工单类型 · 近 30 天 · 目标 85% · 演示数据</span>
+          </div>
+
+          <div style="margin-top:4px">
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">缺货</span>
+                <span class="bullet-code num">48 单 · 均 6.4h</span>
+                <span class="bullet-pct text-warning">78%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="缺货类工单按时解决率 78%，低于 85% 目标线">
+                <span class="bullet-zone z-good"></span>
+                <span class="bullet-zone z-mid"></span>
+                <span class="bullet-zone z-bad"></span>
+                <span class="bullet-measure" style="width:78%"></span>
+                <span class="bullet-target" style="left:85%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">地址错误</span>
+                <span class="bullet-code num">39 单 · 均 3.2h</span>
+                <span class="bullet-pct">91%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="地址错误类工单按时解决率 91%，高于 85% 目标线">
+                <span class="bullet-zone z-good"></span>
+                <span class="bullet-zone z-mid"></span>
+                <span class="bullet-zone z-bad"></span>
+                <span class="bullet-measure" style="width:91%"></span>
+                <span class="bullet-target" style="left:85%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">轨迹停滞</span>
+                <span class="bullet-code num">31 单 · 均 19.8h</span>
+                <span class="bullet-pct text-warning">72%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="轨迹停滞类工单按时解决率 72%，低于 85% 目标线">
+                <span class="bullet-zone z-good"></span>
+                <span class="bullet-zone z-mid"></span>
+                <span class="bullet-zone z-bad"></span>
+                <span class="bullet-measure" style="width:72%"></span>
+                <span class="bullet-target" style="left:85%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">货权不符</span>
+                <span class="bullet-code num">22 单 · 均 9.5h</span>
+                <span class="bullet-pct">88%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="货权不符类工单按时解决率 88%，高于 85% 目标线">
+                <span class="bullet-zone z-good"></span>
+                <span class="bullet-zone z-mid"></span>
+                <span class="bullet-zone z-bad"></span>
+                <span class="bullet-measure" style="width:88%"></span>
+                <span class="bullet-target" style="left:85%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">破损</span>
+                <span class="bullet-code num">26 单 · 均 11.2h</span>
+                <span class="bullet-pct">94%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="破损类工单按时解决率 94%，高于 85% 目标线">
+                <span class="bullet-zone z-good"></span>
+                <span class="bullet-zone z-mid"></span>
+                <span class="bullet-zone z-bad"></span>
+                <span class="bullet-measure" style="width:94%"></span>
+                <span class="bullet-target" style="left:85%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">盘点差异</span>
+                <span class="bullet-code num">17 单 · 均 14.6h</span>
+                <span class="bullet-pct">85%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="盘点差异类工单按时解决率 85%，正好处于 85% 目标线">
+                <span class="bullet-zone z-good"></span>
+                <span class="bullet-zone z-mid"></span>
+                <span class="bullet-zone z-bad"></span>
+                <span class="bullet-measure" style="width:85%"></span>
+                <span class="bullet-target" style="left:85%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">收货超时</span>
+                <span class="bullet-code num">14 单 · 均 16.1h</span>
+                <span class="bullet-pct text-danger">63%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="收货超时类工单按时解决率 63%，显著低于 85% 目标线">
+                <span class="bullet-zone z-good"></span>
+                <span class="bullet-zone z-mid"></span>
+                <span class="bullet-zone z-bad"></span>
+                <span class="bullet-measure" style="width:63%"></span>
+                <span class="bullet-target" style="left:85%"></span>
+              </div>
+            </div>
+          </div>
+
+          <p class="bullet-legend">
+            <span><i style="background:var(--range-good)"></i>按时解决率达标</span>
+            <span><i style="background:var(--range-mid)"></i>低于目标 15% 内预警</span>
+            <span><i style="background:var(--range-bad)"></i>低于目标 15% 以上</span>
+            <span><i style="background:var(--measure);width:14px;height:6px;border-radius:1px"></i>实际达成率</span>
+            <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>目标 85%</span>
+          </p>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <section class="card" aria-labelledby="h-dist">
+            <div class="section-head">
+              <h2 id="h-dist">异常类型分布</h2>
+              <span class="hint">近 7 天 47 单 · 演示数据</span>
+            </div>
+            <div style="margin-top:4px">
+              <div class="slot">
+                <span class="slot-time">12</span>
+                <div class="slot-body">
+                  <div class="slot-name">缺货</div>
+                  <div class="slot-sub">SKU-99310 瑜伽垫 TPE 8mm · 宁波海诚日用</div>
+                </div>
+                <span class="slot-load">26%</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">9</span>
+                <div class="slot-body">
+                  <div class="slot-name">地址错误</div>
+                  <div class="slot-sub">Shopify / Temu 渠道订单居多</div>
+                </div>
+                <span class="slot-load">19%</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">8</span>
+                <div class="slot-body">
+                  <div class="slot-name">轨迹停滞</div>
+                  <div class="slot-sub">UPS / DHL / Colissimo 妥投异常</div>
+                </div>
+                <span class="slot-load">17%</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">6</span>
+                <div class="slot-body">
+                  <div class="slot-name">破损</div>
+                  <div class="slot-sub">SKU-88231 榨汁杯 450ml · 深圳致远电子</div>
+                </div>
+                <span class="slot-load">13%</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">5</span>
+                <div class="slot-body">
+                  <div class="slot-name">货权不符</div>
+                  <div class="slot-sub">ASN 到货批次与预报唛头不一致</div>
+                </div>
+                <span class="slot-load">11%</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">4</span>
+                <div class="slot-body">
+                  <div class="slot-name">盘点差异</div>
+                  <div class="slot-sub">FRA-04 与 LAX-01 循环盘点触发</div>
+                </div>
+                <span class="slot-load">8%</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">3</span>
+                <div class="slot-body">
+                  <div class="slot-name">收货超时</div>
+                  <div class="slot-sub">月台预约满载 · 压车超过 4h</div>
+                </div>
+                <span class="slot-load">6%</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="h-rule">
+            <div class="section-head">
+              <h2 id="h-rule">SLA 计时规则</h2>
+              <span class="hint">规则 v3 · 演示数据</span>
+            </div>
+            <dl class="dl" style="margin-top:6px">
+              <dt>高严重</dt><dd class="td-num">4h</dd>
+              <dt>中严重</dt><dd class="td-num">12h</dd>
+              <dt>低严重</dt><dd class="td-num">24h</dd>
+              <dt>待货主确认</dt><dd>暂停计时</dd>
+              <dt>超时未处理</dt><dd>每 2h 催办并升级</dd>
+            </dl>
+            <div class="note-box" style="margin-top:10px">YYZ-05 加拿多伦多仓（待启用）暂不参与 SLA 统计；本页按钮仅弹出提示，不触发真实作业。</div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 闭环流程 -->
+      <section class="card" aria-labelledby="h-flow">
+        <div class="section-head">
+          <h2 id="h-flow">工单处理流程</h2>
+          <span class="hint">新建 → 指派 → 处理中 → 待货主确认 → 关闭 · 谁在什么系统操作 · 演示数据</span>
+        </div>
+
+        <div class="stepper" style="margin-top:10px">
+          <div class="step done">
+            <span class="step-dot" aria-hidden="true">✓</span>
+            <div class="step-body">
+              <div class="step-title">新建 · 异常自动汇聚</div>
+              <div class="step-meta">OMS / WMS / TMS 规则引擎自动生成，客服也可在工单中心手工新建 · 10-11 09:00</div>
+            </div>
+          </div>
+          <div class="step done">
+            <span class="step-dot" aria-hidden="true">✓</span>
+            <div class="step-body">
+              <div class="step-title">指派 · 落到责任人</div>
+              <div class="step-meta">工单中心按责任仓库当班负载自动分派给操作员，支持手动改派 · 10-11 09:26</div>
+            </div>
+          </div>
+          <div class="step active">
+            <span class="step-dot" aria-hidden="true">3</span>
+            <div class="step-body">
+              <div class="step-title">处理中 · SLA 持续计时</div>
+              <div class="step-meta">操作员在 WMS 作业端 / RF 终端完成补货、改址、索赔与复盘 · 当前 5 单</div>
+            </div>
+          </div>
+          <div class="step pending">
+            <span class="step-dot" aria-hidden="true">4</span>
+            <div class="step-body">
+              <div class="step-title">待货主确认 · 计时暂停</div>
+              <div class="step-meta">涉及货权、赔付与补货方案时推送货主自助门户，确认期间 SLA 暂停 · 当前 2 单</div>
+            </div>
+          </div>
+          <div class="step pending">
+            <span class="step-dot" aria-hidden="true">5</span>
+            <div class="step-body">
+              <div class="step-title">关闭 · 回写与留痕</div>
+              <div class="step-meta">货主确认或操作员提交结案说明，系统回写关联单据并留存审计日志</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-box info" style="margin-top:12px">闭环要求：处理记录、沟通凭证与赔付结论必须挂接工单号；关闭后 7 天内可复盘重开，重开后 SLA 按剩余时长继续计时。</div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+</body>
+</html>

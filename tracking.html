@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>物流跟踪中心 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="tracking" data-wh-col="4">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">物流跟踪中心<span>尾程轨迹聚合 · 停滞检测 · 妥投确认</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="物流跟踪关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">在途运单</div>
+            <div class="kpi-value num" data-kpi="count:shipment.transit">5</div>
+            <div class="kpi-delta">UPS 2 · DHL 1 · Royal Mail 1 · Colissimo 1</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">轨迹停滞</div>
+            <div class="kpi-value num text-warning" data-kpi="count:shipment.delay">1</div>
+            <div class="kpi-delta">超 24h 阈值 <b>1</b> · 已建单跟进</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">今日妥投</div>
+            <div class="kpi-value num text-success" data-kpi="count:shipment.delivered">1</div>
+            <div class="kpi-delta">签收率 <b>96.4%</b> · 目标 95%</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">异常件</div>
+            <div class="kpi-value num text-danger" data-kpi="count:shipment.out">2</div>
+            <div class="kpi-delta">地址异常 1 · 清关异常 1</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-carrier">承运商</label>
+          <select id="f-carrier" class="ctl" data-filter-col="5"><option>全部承运商</option><option>UPS</option><option>FedEx</option><option>DHL</option><option>Royal Mail</option><option>Colissimo</option></select>
+        </div>
+        <div class="field">
+          <label for="f-wh">发货仓</label>
+          <select id="f-wh" class="ctl" data-filter-col="4"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-status">跟踪状态</label>
+          <select id="f-status" class="ctl" data-filter-col="10"><option>全部状态</option><option>运输中</option><option>轨迹停滞</option><option>异常</option><option>已妥投</option><option>已退回</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="运单号 / 关联出库单号" data-filter-col="0,1">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-export="运单跟踪">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary" type="button" data-confirm="将对当前筛选出的「轨迹停滞 / 异常」运单逐张提交承运商查询工单，工单号自动生成并同步至承运商后台。" data-title="批量发起承运商查询" data-ok="提交查询" data-danger data-action="shipment:*:batch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          批量发起承运商查询
+        </button>
+      </div>
+
+      <!-- 运单主表（整宽） -->
+      <section class="card" aria-labelledby="h-list">
+        <div class="section-head">
+          <h2 id="h-list">运单跟踪列表</h2>
+          <span class="hint" data-count-src="shipment">共 10 条</span>
+          <span class="hint">演示数据</span>
+          <span class="hint" data-result-count>10</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="运单跟踪状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">10</span></button>
+          <button class="tab" role="tab" aria-selected="false">运输中 <span class="tab-count">5</span></button>
+          <button class="tab" role="tab" aria-selected="false">轨迹停滞 <span class="tab-count">1</span></button>
+          <button class="tab" role="tab" aria-selected="false">异常 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">已妥投 <span class="tab-count">1</span></button>
+          <button class="tab" role="tab" aria-selected="false">已退回 <span class="tab-count">1</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">运单跟踪列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">运单号</th>
+                <th scope="col">关联出库单</th>
+                <th scope="col">货主</th>
+                <th scope="col">渠道</th>
+                <th scope="col">发货仓</th>
+                <th scope="col">承运商</th>
+                <th scope="col">目的国</th>
+                <th scope="col" class="sortable">发货时间</th>
+                <th scope="col" class="sortable">最后轨迹时间</th>
+                <th scope="col" class="sortable">停滞时长</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="shipment"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>共 10 条 · 每页 20 条 · 第 1 / 1 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <!-- 轨迹时间线 + 承运商对比 -->
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-timeline">
+          <div class="section-head">
+            <h2 id="h-timeline">尾程轨迹时间线</h2>
+            <span class="hint">停滞单聚焦 · 演示数据</span>
+          </div>
+          <div data-timeline="7712…0461"></div>
+          <div class="note-box info" style="margin-top:12px">
+            尾程轨迹由承运商 Webhook 推送（UPS / FedEx / DHL / Royal Mail / Colissimo 均已接入），推送间隔通常 2–6 小时；轨迹停滞超过 12h 自动提醒，超过 24h 自动生成异常工单并抄送货主。
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-sm" type="button" style="flex:1" data-action="shipment:7712…0461:view">查看完整轨迹</button>
+            <button class="btn btn-sm btn-danger" type="button" style="flex:1" data-action="shipment:7712…0461:query">发起承运商查询</button>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-carrier">
+          <div class="section-head">
+            <h2 id="h-carrier">承运商对比</h2>
+            <span class="hint">近 30 天 · 演示数据</span>
+          </div>
+          <div style="margin-top:2px">
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">UPS</span>
+                <span class="bullet-code num">均时 3.2 天 · 异常 1.8%</span>
+                <span class="bullet-pct">97.8%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="UPS 准时率 97.8%，目标 95%，达标">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:97.8%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">DHL</span>
+                <span class="bullet-code num">均时 4.1 天 · 异常 2.6%</span>
+                <span class="bullet-pct">96.5%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="DHL 准时率 96.5%，目标 95%，达标">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:96.5%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">FedEx</span>
+                <span class="bullet-code num">均时 3.6 天 · 异常 3.4%</span>
+                <span class="bullet-pct">94.1%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="FedEx 准时率 94.1%，目标 95%，临界">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:94.1%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">Colissimo</span>
+                <span class="bullet-code num">均时 4.3 天 · 异常 3.9%</span>
+                <span class="bullet-pct">93.6%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="Colissimo 准时率 93.6%，目标 95%，临界">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:93.6%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">Royal Mail</span>
+                <span class="bullet-code num">均时 4.6 天 · 异常 4.8%</span>
+                <span class="bullet-pct">91.2%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="Royal Mail 准时率 91.2%，目标 95%，不达标">
+                <span class="bullet-zone z-good" style="width:90%"></span>
+                <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+                <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+                <span class="bullet-measure" style="width:91.2%"></span>
+                <span class="bullet-target" style="left:95%"></span>
+              </div>
+            </div>
+            <p class="bullet-legend">
+              <span><i style="background:var(--range-good)"></i>≥95% 达标</span>
+              <span><i style="background:var(--range-mid)"></i>90–95% 临界</span>
+              <span><i style="background:var(--range-bad)"></i>&lt;90% 不达标</span>
+              <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>目标 95%</span>
+            </p>
+            <dl class="dl" style="margin-top:10px">
+              <dt>全网平均时效</dt><dd>3.9 天</dd>
+              <dt>全网异常率</dt><dd>3.1%</dd>
+              <dt>停滞提醒 / 建单阈值</dt><dd>12h / 24h</dd>
+            </dl>
+          </div>
+        </section>
+      </div>
+
+      <!-- 异常处置 -->
+      <section class="card" aria-labelledby="h-exc">
+        <div class="section-head">
+          <h2 id="h-exc">异常处置</h2>
+          <span class="hint">4 条待处置 · 演示数据</span>
+          <a class="more" href="tickets.html">异常工单</a>
+        </div>
+        <div class="alert-list" style="margin-top:2px">
+          <div class="alert sev-high">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">7712…0461 轨迹停滞 26h · FedEx Memphis 中转中心</div>
+              <div class="alert-meta">安克创新科技 · OUT-…3560 · 已超 SLA 1h · 工单 CQ-20261010-0883 跟进中</div>
+              <div style="margin-top:6px">
+                <button class="btn btn-sm btn-danger" type="button" data-action="shipment:7712…0461:query">提交承运商查询</button>
+              </div>
+            </div>
+            <span class="alert-time">26h</span>
+          </div>
+
+          <div class="alert sev-high">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">JD01…5580 清关异常 · DHL Leipzig 要求补充 HS 编码</div>
+              <div class="alert-meta">苏州明达玩具 · OUT-…3568 · 申报价与 HS 编码待补 · 已通知货主补件</div>
+              <div style="margin-top:6px">
+                <button class="btn btn-sm btn-danger" type="button" data-action="shipment:JD01…5580:query">提交承运商查询</button>
+              </div>
+            </div>
+            <span class="alert-time">2h</span>
+          </div>
+
+          <div class="alert sev-mid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">RM00…9102 地址异常 · 缺门牌号与邮编无法生成面单</div>
+              <div class="alert-meta">乐歌家居科技 · OUT-…3541 · 客服工单 CS-2291 跟进中 · 停滞 20h</div>
+              <div style="margin-top:6px">
+                <button class="btn btn-sm btn-danger" type="button" data-action="shipment:RM00…9102:query">提交承运商查询</button>
+              </div>
+            </div>
+            <span class="alert-time">20h</span>
+          </div>
+
+          <div class="alert sev-mid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">CL93…2241 拒收退回 · 买家取消订单，已退回 FRA-04</div>
+              <div class="alert-meta">宁波海诚日用 · OUT-…3498 · 待退件质检后按货主策略处置</div>
+              <div style="margin-top:6px">
+                <button class="btn btn-sm btn-danger" type="button" data-action="shipment:CL93…2241:query">核实退回原因</button>
+              </div>
+            </div>
+            <span class="alert-time">6h</span>
+          </div>
+        </div>
+        <div class="note-box" style="margin-top:12px">
+          停滞超 24h 的运单会自动生成异常工单并抄送货主；承运商查询工单 4h 未回复将自动升级。
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+<script src="assets/mod-tracking.js"></script>
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>计费中心 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="billing">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">计费中心<span>计费规则 · 作业计价 · 账单对账</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="计费关键指标">
+        <div class="kpi-grid">
+          <article class="card kpi">
+            <div class="kpi-label">本月应收</div>
+            <div class="kpi-value num">$184,620</div>
+            <div class="kpi-delta">较上月 <b class="up">↑ 8.4%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">待计费作业</div>
+            <div class="kpi-value num">1,284</div>
+            <div class="kpi-delta">金额 <b>$4,860</b> · 超 24h <b class="down">32</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">待出账</div>
+            <div class="kpi-value num">14</div>
+            <div class="kpi-delta">账单 · 覆盖 <b>18</b> 家货主</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">对账差异</div>
+            <div class="kpi-value num text-danger">$2,318</div>
+            <div class="kpi-delta">4 张账单 · 需人工核查</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">逾期应收</div>
+            <div class="kpi-value num text-danger">$21,340</div>
+            <div class="kpi-delta">泉州鞋业 · 逾期 <b>45</b> 天</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-tenant">货主</label>
+          <select id="f-tenant" class="ctl" data-filter-col="1"><option>全部货主</option><option>深圳致远电子</option><option>乐歌家居科技</option><option>安克创新科技</option><option>义乌恒发家居</option><option>泉州鞋业外贸</option></select>
+        </div>
+        <div class="field">
+          <label for="f-item">计费项</label>
+          <select id="f-item" class="ctl" data-filter-col="2"><option>全部</option><option>仓储费</option><option>入库操作费</option><option>出库操作费</option><option>包材费</option><option>增值服务费</option></select>
+        </div>
+        <div class="field">
+          <label for="f-cycle">计费周期</label>
+          <select id="f-cycle" class="ctl"><option>按月</option><option>按周</option><option>按日</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="规则名称 / 账单号" data-filter-col="0,1">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-action="bill:*:trial">费用试算</button>
+        <button class="btn btn-primary" type="button" data-confirm="将对 10 月全部作业执行计费并生成账单，生成后金额不可直接修改，须通过对账调整。" data-title="生成账单" data-ok="生成" data-action="bill:*:gen">
+          生成账单
+        </button>
+      </div>
+
+      <div class="row-2">
+        <!-- 计费规则 -->
+        <section class="card" aria-labelledby="h-rule">
+          <div class="section-head">
+            <h2 id="h-rule">计费规则</h2>
+            <span class="hint">共 42 条 · 演示数据</span>
+            <span class="hint" data-result-count>42</span>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="计费项筛选" style="margin-top:6px">
+            <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">42</span></button>
+            <button class="tab" role="tab" aria-selected="false">仓储费 <span class="tab-count">8</span></button>
+            <button class="tab" role="tab" aria-selected="false">入库操作费 <span class="tab-count">7</span></button>
+            <button class="tab" role="tab" aria-selected="false">出库操作费 <span class="tab-count">9</span></button>
+            <button class="tab" role="tab" aria-selected="false">包材费 <span class="tab-count">6</span></button>
+            <button class="tab" role="tab" aria-selected="false">增值服务费 <span class="tab-count">12</span></button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:8px">
+            <table>
+              <caption class="skip-link">计费规则列表</caption>
+              <thead>
+                <tr>
+                  <th scope="col">货主</th>
+                  <th scope="col">计费项</th>
+                  <th scope="col">计费方式</th>
+                  <th scope="col">单价</th>
+                  <th scope="col">最低消费</th>
+                  <th scope="col">生效期</th>
+                  <th scope="col">状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-strong">深圳致远电子</td>
+                  <td><span class="badge b-neutral">仓储费</span></td>
+                  <td>按 CBM / 天（阶梯）</td>
+                  <td class="td-num">$0.42</td>
+                  <td class="td-num">$300 / 月</td>
+                  <td class="td-num">2026-01-01</td>
+                  <td><span class="badge b-done">生效中</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">深圳致远电子</td>
+                  <td><span class="badge b-neutral">出库操作费</span></td>
+                  <td>按件（分段）</td>
+                  <td class="td-num">$0.38</td>
+                  <td class="td-num">—</td>
+                  <td class="td-num">2026-01-01</td>
+                  <td><span class="badge b-done">生效中</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">乐歌家居科技</td>
+                  <td><span class="badge b-neutral">仓储费</span></td>
+                  <td>按托盘 / 天</td>
+                  <td class="td-num">$1.85</td>
+                  <td class="td-num">$800 / 月</td>
+                  <td class="td-num">2026-03-01</td>
+                  <td><span class="badge b-done">生效中</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">乐歌家居科技</td>
+                  <td><span class="badge b-neutral">入库操作费</span></td>
+                  <td>按托盘</td>
+                  <td class="td-num">$12.00</td>
+                  <td class="td-num">—</td>
+                  <td class="td-num">2026-03-01</td>
+                  <td><span class="badge b-done">生效中</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">安克创新科技</td>
+                  <td><span class="badge b-neutral">出库操作费</span></td>
+                  <td>按件（含序列号核验）</td>
+                  <td class="td-num">$0.55</td>
+                  <td class="td-num">$150 / 月</td>
+                  <td class="td-num">2026-06-01</td>
+                  <td><span class="badge b-done">生效中</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">安克创新科技</td>
+                  <td><span class="badge b-neutral">增值服务费</span></td>
+                  <td>按件 · 换标</td>
+                  <td class="td-num">$0.60</td>
+                  <td class="td-num">—</td>
+                  <td class="td-num">2026-06-01</td>
+                  <td><span class="badge b-done">生效中</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">义乌恒发家居</td>
+                  <td><span class="badge b-neutral">仓储费</span></td>
+                  <td>按 CBM / 天（阶梯）</td>
+                  <td class="td-num">$0.38</td>
+                  <td class="td-num">$200 / 月</td>
+                  <td class="td-num">2026-08-01</td>
+                  <td><span class="badge b-done">生效中</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">义乌恒发家居</td>
+                  <td><span class="badge b-neutral">包材费</span></td>
+                  <td>按实物领用</td>
+                  <td class="td-num">成本价 +8%</td>
+                  <td class="td-num">—</td>
+                  <td class="td-num">2026-08-01</td>
+                  <td><span class="badge b-wait">待生效</span></td>
+                </tr>
+                <tr>
+                  <td class="td-strong">泉州鞋业外贸</td>
+                  <td><span class="badge b-neutral">仓储费</span></td>
+                  <td>按 CBM / 天</td>
+                  <td class="td-num">$0.45</td>
+                  <td class="td-num">$300 / 月</td>
+                  <td class="td-num">2026-10-01</td>
+                  <td><span class="badge b-err">已停用</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>每页 20 条 · 第 1 / 3 页</span>
+            <span class="spacer"></span>
+            <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+            <button class="page-btn" type="button" aria-current="page">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <!-- 待计费队列 -->
+          <section class="card" aria-labelledby="h-queue">
+            <div class="section-head">
+              <h2 id="h-queue">待计费作业</h2>
+              <span class="hint">实时累计 · 演示数据</span>
+            </div>
+            <div style="margin-top:4px">
+              <div class="slot">
+                <span class="slot-time">入库</span>
+                <div class="slot-body">
+                  <div class="slot-name">收货 486 次 · 上架 452 次</div>
+                  <div class="slot-sub">按箱 / 按件计费 · 未计费金额 $1,204</div>
+                </div>
+                <span class="slot-load text-warning">$1,204</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">出库</span>
+                <div class="slot-body">
+                  <div class="slot-name">拣货 6,412 次 · 打包 6,318 次</div>
+                  <div class="slot-sub">按件计费 · 未计费金额 $2,418</div>
+                </div>
+                <span class="slot-load text-warning">$2,418</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">仓储</span>
+                <div class="slot-body">
+                  <div class="slot-name">日均在库 41,208 库位</div>
+                  <div class="slot-sub">按 CBM / 天阶梯计费 · 今日 $622</div>
+                </div>
+                <span class="slot-load text-warning">$622</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">增值</span>
+                <div class="slot-body">
+                  <div class="slot-name">换标 38 · 翻新 92 · 质检 46</div>
+                  <div class="slot-sub">合计未计费金额 $1,064</div>
+                </div>
+                <span class="slot-load text-warning">$1,064</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm" type="button" style="flex:1" data-toast="已重算 1,284 笔待计费作业 · 与规则版本 v12 一致">重算</button>
+              <button class="btn btn-sm btn-primary" type="button" data-confirm="将把 1,284 笔作业计入 10 月账单，计入后仍可通过对账调整修正。" data-title="确认计费" data-ok="计入账单" data-toast="1,284 笔作业已计费 · 合计 $4,860">确认计费</button>
+            </div>
+          </section>
+
+          <!-- 计费规则版本 -->
+          <section class="card" aria-labelledby="h-ver">
+            <div class="section-head">
+              <h2 id="h-ver">规则版本与试算</h2>
+              <span class="hint">当前 v12</span>
+            </div>
+            <div class="stepper" style="margin-top:10px">
+              <div class="step done">
+                <span class="step-dot" aria-hidden="true">✓</span>
+                <div class="step-body">
+                  <div class="step-title">作业事件采集</div>
+                  <div class="step-meta">1,284 笔 · 全部带单据与操作人</div>
+                </div>
+              </div>
+              <div class="step done">
+                <span class="step-dot" aria-hidden="true">✓</span>
+                <div class="step-body">
+                  <div class="step-title">匹配计费规则</div>
+                  <div class="step-meta">命中 42 条规则 · 无匹配 0 笔</div>
+                </div>
+              </div>
+              <div class="step active">
+                <span class="step-dot" aria-hidden="true">3</span>
+                <div class="step-body">
+                  <div class="step-title">阶梯与最低消费计算</div>
+                  <div class="step-meta">触发最低消费 3 家货主</div>
+                </div>
+              </div>
+              <div class="step pending">
+                <span class="step-dot" aria-hidden="true">4</span>
+                <div class="step-body">
+                  <div class="step-title">生成预估账单</div>
+                  <div class="step-meta">待推送货主确认</div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-sm" type="button" style="width:100%;margin-top:12px" data-toast="规则版本对比：v12 相比 v11 调整 3 条 · 影响金额 +$412">版本对比</button>
+          </section>
+        </div>
+      </div>
+
+      <!-- 账单对账 -->
+      <section class="card" aria-labelledby="h-inv">
+        <div class="section-head">
+          <h2 id="h-inv">账单与对账</h2>
+          <span class="hint">10 月 · 演示数据</span>
+          <span class="hint" data-result-count>6</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="账单状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">6</span></button>
+          <button class="tab" role="tab" aria-selected="false">待确认 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">待收款 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">逾期 <span class="tab-count">1</span></button>
+          <button class="tab" role="tab" aria-selected="false">差异 <span class="tab-count">1</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">账单与对账列表</caption>
+            <thead>
+              <tr>
+                <th scope="col">账单号</th>
+                <th scope="col">货主</th>
+                <th scope="col">周期</th>
+                <th scope="col">系统金额</th>
+                <th scope="col">货主确认金额</th>
+                <th scope="col">差异</th>
+                <th scope="col">到期日</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="bill"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>每页 20 条 · 第 1 / 1 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+
+        <div class="note-box info" style="margin-top:12px">账单金额由作业事件自动累计生成，任何调整均通过对账工单留痕；货主可在自助门户下载带明细的 PDF 账单并发起异议。</div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>

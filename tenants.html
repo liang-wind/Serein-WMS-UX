@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>货主管理 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="tenants">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">货主管理<span>货权分离 · 库位共享策略 · 计费归属</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="货主关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">合作货主</div>
+            <div class="kpi-value num" data-kpi="count:tenant.co">18</div>
+            <div class="kpi-delta">在库有货 <b>17</b> · 本月新增 <b>2</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">共享库位占比</div>
+            <div class="kpi-value num">63.4<span class="unit">%</span></div>
+            <div class="kpi-delta">混放不混账 · <b>26,120</b> 个库位</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">待出账应收</div>
+            <div class="kpi-value num">$184,620</div>
+            <div class="kpi-delta">逾期 <b class="down">$21,340</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">货权差异</div>
+            <div class="kpi-value num text-danger">3</div>
+            <div class="kpi-delta">跨货主串货待核 · 高优 <b>1</b></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-st">合作状态</label>
+          <select id="f-st" class="ctl" data-filter-col="7"><option>全部</option><option>合作中</option><option>待续约</option><option>已暂停</option></select>
+        </div>
+        <div class="field">
+          <label for="f-tpl">计费模板</label>
+          <select id="f-tpl" class="ctl" data-filter-col="4"><option>全部</option><option>B2C 代发</option><option>B2B 大货</option><option>退货换标</option><option>混合</option></select>
+        </div>
+        <div class="field">
+          <label for="f-share">库位策略</label>
+          <select id="f-share" class="ctl" data-filter-col="5"><option>全部</option><option>独占</option><option>混放</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="货主编码 / 名称 / 联系人" data-filter-col="0,1">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-export="货主台账">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary" type="button" data-form="tenant">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          新建货主
+        </button>
+      </div>
+
+      <div class="row-2">
+        <!-- 货主列表 -->
+        <section class="card" aria-labelledby="h-list">
+          <div class="section-head">
+            <h2 id="h-list">货主列表</h2>
+            <span class="hint" data-count-src="tenant">共 18 条 · 演示数据</span>
+            <span class="hint" data-result-count>18</span>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="货主状态筛选" style="margin-top:6px">
+            <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">18</span></button>
+            <button class="tab" role="tab" aria-selected="false">合作中 <span class="tab-count">16</span></button>
+            <button class="tab" role="tab" aria-selected="false">待续约 <span class="tab-count">1</span></button>
+            <button class="tab" role="tab" aria-selected="false">已暂停 <span class="tab-count">1</span></button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:8px">
+            <table>
+              <caption class="skip-link">货主列表</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sortable">货主编码</th>
+                  <th scope="col">货主名称</th>
+                  <th scope="col">对接渠道</th>
+                  <th scope="col">币种</th>
+                  <th scope="col">计费模板</th>
+                  <th scope="col">库位策略</th>
+                  <th scope="col">账面应收</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody data-render="tenant"></tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>每页 20 条 · 第 1 / 1 页</span>
+            <span class="spacer"></span>
+            <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+            <button class="page-btn" type="button" aria-current="page">1</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <!-- 货权分层 -->
+          <section class="card" aria-labelledby="h-own">
+            <div class="section-head">
+              <h2 id="h-own">货权分层 · LAX-01</h2>
+              <span class="hint">Bullet Chart · 各货主占本仓库容比</span>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">深圳致远电子</span>
+                <span class="bullet-code num">TN-00041</span>
+                <span class="bullet-pct text-warning">34.8%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="深圳致远电子 占洛杉矶仓库容 34.8%，集中度预警，目标 30%">
+                <span class="bullet-zone z-good" style="width:30%"></span>
+                <span class="bullet-zone z-mid" style="left:30%;width:15%"></span>
+                <span class="bullet-zone z-bad" style="left:45%;width:5%"></span>
+                <span class="bullet-measure" style="width:34.8%"></span>
+                <span class="bullet-target" style="left:30%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">安克创新科技</span>
+                <span class="bullet-code num">TN-00073</span>
+                <span class="bullet-pct">28.2%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="安克创新科技 占洛杉矶仓库容 28.2%，正常区间，目标 30%">
+                <span class="bullet-zone z-good" style="width:30%"></span>
+                <span class="bullet-zone z-mid" style="left:30%;width:15%"></span>
+                <span class="bullet-zone z-bad" style="left:45%;width:5%"></span>
+                <span class="bullet-measure" style="width:28.2%"></span>
+                <span class="bullet-target" style="left:30%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">宁波海诚日用</span>
+                <span class="bullet-code num">TN-00094</span>
+                <span class="bullet-pct">12.4%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="宁波海诚日用 占洛杉矶仓库容 12.4%，正常区间，目标 30%">
+                <span class="bullet-zone z-good" style="width:30%"></span>
+                <span class="bullet-zone z-mid" style="left:30%;width:15%"></span>
+                <span class="bullet-zone z-bad" style="left:45%;width:5%"></span>
+                <span class="bullet-measure" style="width:12.4%"></span>
+                <span class="bullet-target" style="left:30%"></span>
+              </div>
+            </div>
+
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">其他 15 家</span>
+                <span class="bullet-code num">—</span>
+                <span class="bullet-pct">24.6%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="其他货主合计 占洛杉矶仓库容 24.6%，正常区间，目标 30%">
+                <span class="bullet-zone z-good" style="width:30%"></span>
+                <span class="bullet-zone z-mid" style="left:30%;width:15%"></span>
+                <span class="bullet-zone z-bad" style="left:45%;width:5%"></span>
+                <span class="bullet-measure" style="width:24.6%"></span>
+                <span class="bullet-target" style="left:30%"></span>
+              </div>
+            </div>
+
+            <p class="bullet-legend">
+              <span><i style="background:var(--range-good);width:30%"></i>≤30% 均衡</span>
+              <span><i style="background:var(--range-mid)"></i>集中度预警</span>
+              <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>集中度上限 30%</span>
+            </p>
+          </section>
+
+          <!-- 混放校验 -->
+          <section class="card" aria-labelledby="h-mix">
+            <div class="section-head">
+              <h2 id="h-mix">混放校验规则</h2>
+              <span class="hint">入库时强制校验</span>
+            </div>
+            <div class="check-list" style="margin-top:4px">
+              <div class="check">
+                <input type="checkbox" id="m1" checked>
+                <div class="check-body">
+                  <label class="check-title" for="m1">同库位禁止跨货主</label>
+                  <div class="check-help">默认开启，货主需单独授权「允许混放」</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="m2" checked>
+                <div class="check-body">
+                  <label class="check-title" for="m2">同库位禁止混批次</label>
+                  <div class="check-help">批次效期商品强制独立库位</div>
+                </div>
+              </div>
+              <div class="check">
+                <input type="checkbox" id="m3">
+                <div class="check-body">
+                  <label class="check-title" for="m3">同库位禁止混 SKU</label>
+                  <div class="check-help">关闭时一个库位可放多 SKU（仅限小件）</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm" type="button" style="flex:1" data-toast="货权校验报告：本周期命中 0 次跨货主串货 · 3 次待复核">校验报告</button>
+              <button class="btn btn-sm btn-primary" type="button" data-toast="混放策略已保存 · 对 18 家货主即时生效">保存策略</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 货主 × 仓库矩阵 -->
+      <section class="card" aria-labelledby="h-matrix">
+        <div class="section-head">
+          <h2 id="h-matrix">货主 × 仓库 合作矩阵</h2>
+          <span class="hint">标注库位共享策略 · 演示数据</span>
+        </div>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">货主与仓库的合作关系及库位共享策略</caption>
+            <thead>
+              <tr>
+                <th scope="col">货主</th>
+                <th scope="col">LAX-01 美西</th>
+                <th scope="col">EWR-02 美东</th>
+                <th scope="col">BHX-03 英国</th>
+                <th scope="col">FRA-04 德国</th>
+                <th scope="col">本月出库件数</th>
+                <th scope="col">账期</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-strong">深圳致远电子</td>
+                <td><span class="badge b-ing">混放</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-ing">混放</span></td>
+                <td><span class="badge b-ing">混放</span></td>
+                <td class="td-num">18,420</td>
+                <td class="td-num">月结 30 天</td>
+              </tr>
+              <tr>
+                <td class="td-strong">乐歌家居科技</td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-done">独占</span></td>
+                <td><span class="badge b-done">独占</span></td>
+                <td class="td-num">6,180</td>
+                <td class="td-num">月结 45 天</td>
+              </tr>
+              <tr>
+                <td class="td-strong">安克创新科技</td>
+                <td><span class="badge b-ing">混放</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td class="td-num">24,960</td>
+                <td class="td-num">月结 30 天</td>
+              </tr>
+              <tr>
+                <td class="td-strong">义乌恒发家居</td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-ing">混放</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td class="td-num">9,340</td>
+                <td class="td-num">周结</td>
+              </tr>
+              <tr>
+                <td class="td-strong">苏州明达玩具</td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-ing">混放</span></td>
+                <td class="td-num">4,120</td>
+                <td class="td-num">月结 30 天</td>
+              </tr>
+              <tr>
+                <td class="td-strong">中山灯饰照明</td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td><span class="badge b-ing">混放</span></td>
+                <td><span class="badge b-neutral">—</span></td>
+                <td class="td-num">2,860</td>
+                <td class="td-num">月结 60 天</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="hint" style="margin:8px 0 0">共 18 家货主 × 4 个仓库 · 当前展示 6 家主要货主。混放库位在收货、上架、拣货、盘点四个环节均按货主分账，任一操作不写入其他货主台账。</p>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>

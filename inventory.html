@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>库存管理 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="inventory" data-wh-col="3">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">库存管理<span>SKU · 批次 · 库位 · 安全线</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <section aria-label="库存关键指标">
+        <div class="kpi-grid">
+          <article class="card kpi">
+            <div class="kpi-label">在库 SKU</div>
+            <div class="kpi-value num">12,847</div>
+            <div class="kpi-delta">较上周 <b class="up">↑ 1.9%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">库存总量</div>
+            <div class="kpi-value num">286.4<span class="unit">万件</span></div>
+            <div class="kpi-delta">占用库位 <b>41,208</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">可用库存</div>
+            <div class="kpi-value num">271.8<span class="unit">万件</span></div>
+            <div class="kpi-delta">锁定 <b>14.6万</b>（待出库）</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">低库存 SKU</div>
+            <div class="kpi-value num text-warning" data-kpi="count:sku.low">318</div>
+            <div class="kpi-delta">低于安全线 · 需补货</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">呆滞库存</div>
+            <div class="kpi-value num text-danger" data-kpi="count:sku.slow">64</div>
+            <div class="kpi-delta">90 天无动销 · 占 2.1%</div>
+          </article>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-tenant">货主</label>
+          <select id="f-tenant" class="ctl" data-filter-col="2"><option>全部货主</option><option>深圳致远电子</option><option>义乌恒发家居</option><option>东莞精工五金</option><option>宁波海诚日用</option><option>苏州明达玩具</option></select>
+        </div>
+        <div class="field">
+          <label for="f-wh">仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="3"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-cat">品类</label>
+          <select id="f-cat" class="ctl" data-filter-col="1"><option>全部品类</option><option>3C 电子</option><option>家居日用</option><option>服饰鞋包</option><option>玩具母婴</option></select>
+        </div>
+        <div class="field">
+          <label for="f-st">库存状态</label>
+          <select id="f-st" class="ctl" data-filter-col="9"><option>全部</option><option>正常</option><option>低库存</option><option>缺货</option><option>呆滞</option><option>锁定</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="SKU / 商品名 / 货主" data-filter-col="0,1,2">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-form="count">盘点任务</button>
+        <button class="btn" type="button" data-export="库存明细">导出</button>
+        <button class="btn btn-primary" type="button" data-form="adjust">调整库存</button>
+      </div>
+
+      <div class="table-grid">
+        <section class="card" aria-labelledby="h-list" style="grid-column:1 / -1">
+          <div class="section-head">
+            <h2 id="h-list">库存明细</h2>
+            <span class="hint" data-count-src="sku">共 12,847 条 · 当前筛选 8</span>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="库存状态筛选" style="margin-top:6px">
+            <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">12847</span></button>
+            <button class="tab" role="tab" aria-selected="false">正常 <span class="tab-count">12367</span></button>
+            <button class="tab" role="tab" aria-selected="false">低库存 <span class="tab-count">318</span></button>
+            <button class="tab" role="tab" aria-selected="false">缺货 <span class="tab-count">12</span></button>
+            <button class="tab" role="tab" aria-selected="false">锁定 <span class="tab-count">86</span></button>
+            <button class="tab" role="tab" aria-selected="false">呆滞 <span class="tab-count">64</span></button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:8px">
+            <table>
+              <caption class="skip-link">库存明细列表</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sortable">SKU</th>
+                  <th scope="col">商品名称 / 品类</th>
+                  <th scope="col">货主</th>
+                  <th scope="col">仓库</th>
+                  <th scope="col">主库位</th>
+                  <th scope="col" class="sortable">可用</th>
+                  <th scope="col">锁定</th>
+                  <th scope="col">安全线</th>
+                  <th scope="col">水位</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody data-render="sku"></tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>每页 20 条 · 第 1 / 643 页</span>
+            <span class="spacer"></span>
+            <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+            <button class="page-btn" type="button" aria-current="page">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-turn">
+          <div class="section-head">
+            <h2 id="h-turn">库存水位分布</h2>
+            <span class="hint">Bullet Chart · 可用量 vs 安全线</span>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">3C 电子</span>
+              <span class="bullet-code num">2,140 SKU</span>
+              <span class="bullet-pct">76.5%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="3C电子 库存水位 76.5%，预警区间，安全水位 85%">
+              <span class="bullet-zone z-good"></span><span class="bullet-zone z-mid"></span><span class="bullet-zone z-bad"></span>
+              <span class="bullet-measure" style="width:76.5%"></span><span class="bullet-target" style="left:85%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">家居日用</span>
+              <span class="bullet-code num">4,820 SKU</span>
+              <span class="bullet-pct">88.2%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="家居日用 库存水位 88.2%，预警区间，安全水位 85%">
+              <span class="bullet-zone z-good"></span><span class="bullet-zone z-mid"></span><span class="bullet-zone z-bad"></span>
+              <span class="bullet-measure" style="width:88.2%"></span><span class="bullet-target" style="left:85%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">服饰鞋包</span>
+              <span class="bullet-code num">3,366 SKU</span>
+              <span class="bullet-pct text-danger">94.7%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="服饰鞋包 库存水位 94.7%，超限，安全水位 85%">
+              <span class="bullet-zone z-good"></span><span class="bullet-zone z-mid"></span><span class="bullet-zone z-bad"></span>
+              <span class="bullet-measure" style="width:94.7%"></span><span class="bullet-target" style="left:85%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">玩具母婴</span>
+              <span class="bullet-code num">2,521 SKU</span>
+              <span class="bullet-pct">58.9%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="玩具母婴 库存水位 58.9%，正常区间，安全水位 85%">
+              <span class="bullet-zone z-good"></span><span class="bullet-zone z-mid"></span><span class="bullet-zone z-bad"></span>
+              <span class="bullet-measure" style="width:58.9%"></span><span class="bullet-target" style="left:85%"></span>
+            </div>
+          </div>
+          <p class="bullet-legend">
+            <span><i style="background:var(--range-good)"></i>≤70% 正常</span>
+            <span><i style="background:var(--range-mid)"></i>70–90% 预警</span>
+            <span><i style="background:var(--range-bad)"></i>&gt;90% 超限</span>
+            <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>安全水位 85%</span>
+          </p>
+        </section>
+
+        <section class="card" aria-labelledby="h-exp">
+          <div class="section-head">
+            <h2 id="h-exp">批次效期预警</h2>
+            <span class="hint num">14</span>
+          </div>
+          <div class="alert-list">
+            <div class="alert sev-high">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">批次 B2604-0912 将于 7 天后过期</div>
+                <div class="alert-meta">SKU-56012 · LAX-01 · 1,240 件</div>
+              </div>
+              <span class="alert-time">7d</span>
+            </div>
+            <div class="alert sev-high">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">批次 B2511-0330 已过期 3 天</div>
+                <div class="alert-meta">SKU-33478 · FRA-04 · 86 件待报废</div>
+              </div>
+              <span class="alert-time">3d</span>
+            </div>
+            <div class="alert sev-mid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">4 个批次 30 天内到期</div>
+                <div class="alert-meta">合计 3,410 件 · 建议优先出库</div>
+              </div>
+              <span class="alert-time">30d</span>
+            </div>
+            <div class="alert sev-low">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01"/><path d="M12 8v4"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">盘点差异单待复核</div>
+                <div class="alert-meta">FRA-04 · 6 张 · 差异 148 件</div>
+              </div>
+              <span class="alert-time">5h</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>

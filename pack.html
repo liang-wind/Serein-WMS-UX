@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>称重复核台 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="pack" data-wh-col="3">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">称重复核台<span>复核扫码 · 称重校验 · 面单 · 交接承运商</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="打包台关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">待打包</div>
+            <div class="kpi-value num">46</div>
+            <div class="kpi-delta">4 台全部占用 · 最早 SLA <b>15:00</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">打包中</div>
+            <div class="kpi-value num">12</div>
+            <div class="kpi-delta">复核扫码 <b>8</b> · 称重校验 <b>4</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">今日已打包</div>
+            <div class="kpi-value num">1,284</div>
+            <div class="kpi-delta">较昨日 <b class="up">↑ 6.8%</b> · 已交接 <b>1,209</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">称重拦截次数</div>
+            <div class="kpi-value num text-danger">23</div>
+            <div class="kpi-delta">偏差 <b>&gt;15%</b> 转工单 <b>9</b> · 同向预警 <b>7</b> · 其他 <b>7</b></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-station">打包台</label>
+          <select id="f-station" class="ctl" data-filter-col="9"><option>全部打包台</option><option>P-01</option><option>P-02</option><option>P-03</option><option>P-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-wh">仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="3"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-ch">渠道</label>
+          <select id="f-ch" class="ctl" data-filter-col="2"><option>全部渠道</option><option>Amazon</option><option>Shopify</option><option>eBay</option><option>Temu</option></select>
+        </div>
+        <div class="field">
+          <label for="f-status">状态</label>
+          <select id="f-status" class="ctl" data-filter-col="10"><option>全部状态</option><option>待打包</option><option>复核中</option><option>称重拦截</option><option>待交运</option><option>已交接</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="出库单号 / 复核人" data-filter-col="0,8">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn btn-primary" type="button" data-confirm="将对当前筛选命中的包裹批量推送面单至共享打印队列，重复打印将产生额外包材与运费成本。" data-title="批量打印面单" data-ok="确认打印" data-toast="已批量打印 12 张面单 · 面单号段 FX-20261011-2231 至 FX-20261011-2242 · 演示数据">批量打印面单</button>
+      </div>
+
+      <!-- 打包任务队列 -->
+      <section class="card" aria-labelledby="h-queue">
+        <div class="section-head">
+          <h2 id="h-queue">打包任务队列</h2>
+          <span class="hint">偏差阈值 ±5% / ±15% · 重量单位 kg · 演示数据</span>
+          <span class="hint" data-result-count>12</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="打包任务状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">12</span></button>
+          <button class="tab" role="tab" aria-selected="false">待打包 <span class="tab-count">3</span></button>
+          <button class="tab" role="tab" aria-selected="false">复核中 <span class="tab-count">4</span></button>
+          <button class="tab" role="tab" aria-selected="false">称重拦截 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">待交运 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">已交接 <span class="tab-count">1</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">打包任务队列列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">出库单号</th>
+                <th scope="col">货主</th>
+                <th scope="col">渠道</th>
+                <th scope="col">波次 / 仓库</th>
+                <th scope="col">SKU 数 / 件数</th>
+                <th scope="col" class="sortable">预估重量</th>
+                <th scope="col" class="sortable">实称重量</th>
+                <th scope="col" class="sortable">偏差</th>
+                <th scope="col">复核人</th>
+                <th scope="col">打包台</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr title="SKU-88231 便携式榨汁杯 450ml ×4 · SKU-33478 不锈钢保温杯 500ml ×2 · SKU-44122 蓝牙自拍杆 三脚架款 ×2">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3601 打包明细 · 3 SKU / 8 件 · 演示数据">OUT-20261011-3601</button></td>
+                <td class="td-strong">深圳致远电子 <span class="hint">TN-00041</span></td>
+                <td>Amazon</td>
+                <td><span class="td-strong">W-20261011-007</span> <span class="hint num">LAX-01</span></td>
+                <td class="td-num">3 SKU / 8 件</td>
+                <td class="td-num">2.40</td>
+                <td class="td-num">2.44</td>
+                <td class="td-num">+1.7%</td>
+                <td>陈工</td>
+                <td class="td-num">P-01</td>
+                <td><span class="badge b-wait">待打包</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3601 已领取至 P-01 · 复核人 陈工">领取</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3601 拣货单已推送至 PDA-03 · 8 件">打印拣货单</button>
+                </td>
+              </tr>
+              <tr title="SKU-71904 折叠收纳箱 66L 三件套 ×4 · SKU-11708 棉麻窗帘 200×270cm ×2">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3602 打包明细 · 2 SKU / 6 件 · 演示数据">OUT-20261011-3602</button></td>
+                <td class="td-strong">义乌恒发家居 <span class="hint">TN-00086</span></td>
+                <td>Shopify</td>
+                <td><span class="td-strong">W-20261011-007</span> <span class="hint num">LAX-01</span></td>
+                <td class="td-num">2 SKU / 6 件</td>
+                <td class="td-num">5.80</td>
+                <td class="td-num">5.76</td>
+                <td class="td-num">-0.7%</td>
+                <td>陈工</td>
+                <td class="td-num">P-01</td>
+                <td><span class="badge b-ing">复核中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3602 复核扫码通过 · 6 件与拣货单一致">复核扫码</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3602 已上秤 · 实称 5.76kg 回写完成">称重</button>
+                </td>
+              </tr>
+              <tr title="SKU-88231 便携式榨汁杯 450ml ×4">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3603 打包明细 · 1 SKU / 4 件 · 演示数据">OUT-20261011-3603</button></td>
+                <td class="td-strong">深圳致远电子 <span class="hint">TN-00041</span></td>
+                <td>Amazon</td>
+                <td><span class="td-strong">W-20261011-007</span> <span class="hint num">LAX-01</span></td>
+                <td class="td-num">1 SKU / 4 件</td>
+                <td class="td-num">2.40</td>
+                <td class="td-num">2.84</td>
+                <td><span class="td-num text-danger td-strong">+18.3%</span> <span class="badge b-err">超差</span></td>
+                <td>赵小雨</td>
+                <td class="td-num">P-02</td>
+                <td><span class="badge b-err">称重拦截</span></td>
+                <td class="td-ops">
+                  <button class="btn-link danger" type="button" data-confirm="偏差 +18.3% 已超过 ±15% 阈值，转异常工单后面单将被冻结，需仓库主管复核后才可继续交接。" data-title="转异常工单" data-ok="确认转单" data-danger data-toast="OUT-20261011-3603 已转异常工单 GD-20261011-0451 · 面单已冻结">转异常工单</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3603 复称指令已下发至 P-02 电子秤">复称提交</button>
+                </td>
+              </tr>
+              <tr title="多 SKU 混装 · 12 件 · 已按箱唛分箱">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3604 打包明细 · 4 SKU / 12 件 · 演示数据">OUT-20261011-3604</button></td>
+                <td class="td-strong">乐歌家居科技 <span class="hint">TN-00058</span></td>
+                <td>eBay</td>
+                <td><span class="td-strong">W-20261011-006</span> <span class="hint num">EWR-02</span></td>
+                <td class="td-num">4 SKU / 12 件</td>
+                <td class="td-num">9.60</td>
+                <td class="td-num">9.42</td>
+                <td class="td-num">-1.9%</td>
+                <td>赵小雨</td>
+                <td class="td-num">P-02</td>
+                <td><span class="badge b-ing">复核中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3604 复核扫码通过 · 12 件与拣货单一致">复核扫码</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3604 已上秤 · 实称 9.42kg 回写完成">称重</button>
+                </td>
+              </tr>
+              <tr title="多 SKU 混装 · 5 件 · 含易碎品 1 件">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3605 打包明细 · 2 SKU / 5 件 · 演示数据">OUT-20261011-3605</button></td>
+                <td class="td-strong">安克创新科技 <span class="hint">TN-00073</span></td>
+                <td>Temu</td>
+                <td><span class="td-strong">W-20261011-006</span> <span class="hint num">EWR-02</span></td>
+                <td class="td-num">2 SKU / 5 件</td>
+                <td class="td-num">3.20</td>
+                <td class="td-num">3.38</td>
+                <td class="td-num text-warning">+5.6%</td>
+                <td>钱大力</td>
+                <td class="td-num">P-03</td>
+                <td><span class="badge b-wait">待打包</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3605 已领取至 P-03 · 复核人 钱大力">领取</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3605 拣货单已推送至 PDA-07 · 5 件">打印拣货单</button>
+                </td>
+              </tr>
+              <tr title="SKU-56012 LED 感应夜灯 磁吸款 ×5 · 五金件 2 项 ×4">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3606 打包明细 · 3 SKU / 9 件 · 演示数据">OUT-20261011-3606</button></td>
+                <td class="td-strong">东莞精工五金 <span class="hint">TN-00108</span></td>
+                <td>Amazon</td>
+                <td><span class="td-strong">W-20261011-005</span> <span class="hint num">BHX-03</span></td>
+                <td class="td-num">3 SKU / 9 件</td>
+                <td class="td-num">4.10</td>
+                <td class="td-num">3.98</td>
+                <td class="td-num">-2.9%</td>
+                <td>钱大力</td>
+                <td class="td-num">P-03</td>
+                <td><span class="badge b-ing">复核中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3606 复核扫码通过 · 9 件与拣货单一致">复核扫码</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3606 已上秤 · 实称 3.98kg 回写完成">称重</button>
+                </td>
+              </tr>
+              <tr title="SKU-99310 瑜伽垫 TPE 加厚 8mm ×5 · 日用杂品 1 项 ×2">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3607 打包明细 · 2 SKU / 7 件 · 演示数据">OUT-20261011-3607</button></td>
+                <td class="td-strong">宁波海诚日用 <span class="hint">TN-00094</span></td>
+                <td>Shopify</td>
+                <td><span class="td-strong">W-20261011-005</span> <span class="hint num">BHX-03</span></td>
+                <td class="td-num">2 SKU / 7 件</td>
+                <td class="td-num">6.40</td>
+                <td class="td-num">6.52</td>
+                <td class="td-num">+1.9%</td>
+                <td>孙倩</td>
+                <td class="td-num">P-04</td>
+                <td><span class="badge b-wait">待交运</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3607 面单已打印 · Royal Mail 跟踪号 RM-4471-9920">打印面单</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3607 已交接 Royal Mail · 交接单号 HD-20261011-0882">交接承运商</button>
+                </td>
+              </tr>
+              <tr title="多 SKU 混装 · 14 件 · 需按渠道分箱">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3608 打包明细 · 5 SKU / 14 件 · 演示数据">OUT-20261011-3608</button></td>
+                <td class="td-strong">苏州明达玩具 <span class="hint">TN-00115</span></td>
+                <td>Amazon</td>
+                <td><span class="td-strong">W-20261011-008</span> <span class="hint num">FRA-04</span></td>
+                <td class="td-num">5 SKU / 14 件</td>
+                <td class="td-num">8.20</td>
+                <td class="td-num">7.68</td>
+                <td class="td-num text-warning">-6.3%</td>
+                <td>孙倩</td>
+                <td class="td-num">P-04</td>
+                <td><span class="badge b-ing">复核中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3608 复核扫码通过 · 14 件与拣货单一致">复核扫码</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3608 偏差 -6.3% 已记录 · 待称重复核结论">称重</button>
+                </td>
+              </tr>
+              <tr title="灯具 2 项 ×6 · 含易碎品">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3609 打包明细 · 2 SKU / 6 件 · 演示数据">OUT-20261011-3609</button></td>
+                <td class="td-strong">中山灯饰照明 <span class="hint">TN-00123</span></td>
+                <td>eBay</td>
+                <td><span class="td-strong">W-20261011-008</span> <span class="hint num">FRA-04</span></td>
+                <td class="td-num">2 SKU / 6 件</td>
+                <td class="td-num">7.60</td>
+                <td class="td-num">8.96</td>
+                <td><span class="td-num text-danger td-strong">+17.9%</span> <span class="badge b-err">超差</span></td>
+                <td>孙倩</td>
+                <td class="td-num">P-04</td>
+                <td><span class="badge b-err">称重拦截</span></td>
+                <td class="td-ops">
+                  <button class="btn-link danger" type="button" data-confirm="偏差 +17.9% 已超过 ±15% 阈值，转异常工单后面单将被冻结，需仓库主管复核后才可继续交接。" data-title="转异常工单" data-ok="确认转单" data-danger data-toast="OUT-20261011-3609 已转异常工单 GD-20261011-0452 · 面单已冻结">转异常工单</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3609 复称指令已下发至 P-04 电子秤">复称提交</button>
+                </td>
+              </tr>
+              <tr title="SKU-20865 宠物自动饮水机 2.4L ×4 · SKU-33478 不锈钢保温杯 500ml ×4 · SKU-44122 蓝牙自拍杆 三脚架款 ×2">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3610 打包明细 · 3 SKU / 10 件 · 演示数据">OUT-20261011-3610</button></td>
+                <td class="td-strong">深圳致远电子 <span class="hint">TN-00041</span></td>
+                <td>Amazon</td>
+                <td><span class="td-strong">W-20261011-008</span> <span class="hint num">FRA-04</span></td>
+                <td class="td-num">3 SKU / 10 件</td>
+                <td class="td-num">5.10</td>
+                <td class="td-num">5.02</td>
+                <td class="td-num">-1.6%</td>
+                <td>陈工</td>
+                <td class="td-num">P-01</td>
+                <td><span class="badge b-wait">待交运</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3610 面单已打印 · DHL 跟踪号 DH-7712-0034">打印面单</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3610 已交接 DHL · 交接单号 HD-20261011-0883">交接承运商</button>
+                </td>
+              </tr>
+              <tr title="多 SKU 混装 · 4 件">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3611 打包明细 · 2 SKU / 4 件 · 演示数据">OUT-20261011-3611</button></td>
+                <td class="td-strong">乐歌家居科技 <span class="hint">TN-00058</span></td>
+                <td>Shopify</td>
+                <td><span class="td-strong">W-20261011-006</span> <span class="hint num">EWR-02</span></td>
+                <td class="td-num">2 SKU / 4 件</td>
+                <td class="td-num">4.40</td>
+                <td class="td-num">4.63</td>
+                <td class="td-num text-warning">+5.2%</td>
+                <td>赵小雨</td>
+                <td class="td-num">P-02</td>
+                <td><span class="badge b-wait">待打包</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3611 已领取至 P-02 · 复核人 赵小雨">领取</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3611 拣货单已推送至 PDA-05 · 4 件">打印拣货单</button>
+                </td>
+              </tr>
+              <tr title="SKU-71904 折叠收纳箱 66L 三件套 ×5 · SKU-11708 棉麻窗帘 200×270cm ×4 · 家居杂品 2 项 ×2">
+                <td><button class="td-link td-num" type="button" data-toast="OUT-20261011-3612 打包明细 · 4 SKU / 11 件 · 演示数据">OUT-20261011-3612</button></td>
+                <td class="td-strong">义乌恒发家居 <span class="hint">TN-00086</span></td>
+                <td>Temu</td>
+                <td><span class="td-strong">W-20261011-005</span> <span class="hint num">BHX-03</span></td>
+                <td class="td-num">4 SKU / 11 件</td>
+                <td class="td-num">7.30</td>
+                <td class="td-num">7.24</td>
+                <td class="td-num">-0.8%</td>
+                <td>钱大力</td>
+                <td class="td-num">P-03</td>
+                <td><span class="badge b-done">已交接</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3612 轨迹已同步 · Colissimo 6A-2210-4471">查看轨迹</button>
+                  <button class="btn-link" type="button" data-toast="OUT-20261011-3612 面单补打完成 · Colissimo 6A-2210-4471">补打面单</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note-box" style="margin-top:10px">复核（捡的对不对）与称重校验（重量对不对）是出库链路最容易被漏掉的两个防错节点：本页所有偏差阈值、拦截动作与包材价格均为<b>演示数据</b>，正式环境以仓库配置与货主合同为准。</div>
+
+        <div class="pager">
+          <span>每页 12 条 · 共 12 条 · 演示数据</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" disabled aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <!-- 规则 + 包材 -->
+      <div class="table-grid">
+        <section class="card" aria-labelledby="h-rule">
+          <div class="section-head">
+            <h2 id="h-rule">称重校验规则</h2>
+            <span class="hint">P-01 ~ P-04 强制生效</span>
+          </div>
+          <div class="check-list" style="margin-top:4px">
+            <div class="check">
+              <input type="checkbox" id="w-rule-1" checked>
+              <div class="check-body">
+                <label class="check-title" for="w-rule-1">偏差 &gt;15% 强制拦截并转异常工单</label>
+                <div class="check-help">实称与预估重量偏差超过 ±15% 时禁止打印面单，自动生成异常工单并冻结运单号</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="w-rule-2" checked>
+              <div class="check-body">
+                <label class="check-title" for="w-rule-2">连续 3 单同 SKU 偏差同向则预警</label>
+                <div class="check-help">同一 SKU 连续 3 单偏差方向一致且累计超过 5% 时推送预警，提示复核商品维护重量</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="w-rule-3" checked>
+              <div class="check-body">
+                <label class="check-title" for="w-rule-3">称重数据回写运单运费试算</label>
+                <div class="check-help">实称重量回写运单后按承运商计费重规则重算运费，差异超过 $5 时提示复核报价</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="w-rule-4" checked>
+              <div class="check-body">
+                <label class="check-title" for="w-rule-4">复核扫码与称重双因子才放行</label>
+                <div class="check-help">漏扫码或漏称重的订单禁止进入面单打印队列，从流程上杜绝望项与漏件</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-pack">
+          <div class="section-head">
+            <h2 id="h-pack">包材管理</h2>
+            <span class="hint">LAX-01 耗材仓 · 演示数据</span>
+          </div>
+          <div style="margin-top:4px">
+            <div class="slot">
+              <span class="slot-time">PM-01</span>
+              <div class="slot-body">
+                <div class="slot-name">飞机盒 · 五层瓦楞</div>
+                <div class="slot-sub">320×240×160mm · 单价 $0.42 · 本月领用 1,860</div>
+              </div>
+              <span class="slot-load">库存 2,140</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">PM-02</span>
+              <div class="slot-body">
+                <div class="slot-name">飞机盒 · 五层瓦楞（大）</div>
+                <div class="slot-sub">420×320×240mm · 单价 $0.68 · 本月领用 1,120</div>
+              </div>
+              <span class="slot-load text-warning">库存 640</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">PM-03</span>
+              <div class="slot-body">
+                <div class="slot-name">气泡袋 · 双层膜</div>
+                <div class="slot-sub">400×600mm · 单价 $0.09 · 本月领用 4,300</div>
+              </div>
+              <span class="slot-load">库存 9,800</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">PM-04</span>
+              <div class="slot-body">
+                <div class="slot-name">纸箱 · 五层瓦楞</div>
+                <div class="slot-sub">500×400×300mm · 单价 $0.95 · 本月领用 760</div>
+              </div>
+              <span class="slot-load">库存 1,050</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">PM-05</span>
+              <div class="slot-body">
+                <div class="slot-name">封箱胶带 · 透明</div>
+                <div class="slot-sub">48mm×100y · 单价 $1.20 · 本月领用 96</div>
+              </div>
+              <span class="slot-load">库存 214</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">PM-06</span>
+              <div class="slot-body">
+                <div class="slot-name">填充纸 · 本白</div>
+                <div class="slot-sub">500×750mm · 单价 $0.06 · 本月领用 6,200</div>
+              </div>
+              <span class="slot-load">库存 12,400</span>
+            </div>
+          </div>
+          <div class="note-box" style="margin-top:10px">包材扣减写入库存流水：每完成一单打包，按实际领用的包材编码扣减库存并生成流水（类型：包材出库），库存低于安全线时自动推送补货预警。</div>
+          <button class="btn btn-sm" type="button" style="width:100%;margin-top:10px" data-toast="包材扣减流水已导出 · 今日 1,284 笔 · 合计 $1,932.60 · 演示数据">导出包材扣减流水</button>
+        </section>
+      </div>
+
+      <!-- 流程 + 拦截记录 -->
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-flow">
+          <div class="section-head">
+            <h2 id="h-flow">打包作业流程</h2>
+            <span class="hint num">OUT-20261011-3603 · 当前卡点</span>
+          </div>
+          <div class="stepper" style="margin-top:10px">
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">拣货完成</div>
+                <div class="step-meta">10-11 09:42 · 波次 W-20261011-007 · 4 件</div>
+              </div>
+            </div>
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">打包台领取</div>
+                <div class="step-meta">10-11 10:05 · P-02 赵小雨</div>
+              </div>
+            </div>
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">复核扫码</div>
+                <div class="step-meta">10-11 10:07 · SKU-88231 与拣货单一致</div>
+              </div>
+            </div>
+            <div class="step active">
+              <span class="step-dot" aria-hidden="true">4</span>
+              <div class="step-body">
+                <div class="step-title">称重校验</div>
+                <div class="step-meta">实称 2.84kg / 预估 2.40kg · 偏差 +18.3% 待判定</div>
+              </div>
+            </div>
+            <div class="step pending">
+              <span class="step-dot" aria-hidden="true">5</span>
+              <div class="step-body">
+                <div class="step-title">面单粘贴</div>
+                <div class="step-meta">待称重通过后生成 · FX-20261011-2233</div>
+              </div>
+            </div>
+            <div class="step pending">
+              <span class="step-dot" aria-hidden="true">6</span>
+              <div class="step-body">
+                <div class="step-title">交接承运商</div>
+                <div class="step-meta">UPS · LAX-01 17:00 截单</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-danger btn-sm" type="button" style="flex:1" data-confirm="OUT-20261011-3603 偏差 +18.3% 超过 ±15% 阈值，转异常工单后面单将被冻结，需仓库主管复核后才可继续交接。" data-title="转异常工单" data-ok="确认转单" data-danger data-toast="OUT-20261011-3603 已转异常工单 GD-20261011-0451 · 面单已冻结">转异常工单</button>
+            <button class="btn btn-sm" type="button" data-toast="OUT-20261011-3603 复称通过 · 实称 2.49kg 偏差 +3.8% · 已回写运费试算">放行打印</button>
+          </div>
+          <div class="note-box info" style="margin-top:10px">当前卡点：称重校验未通过。偏差超过 ±15% 时系统强制拦截，禁止进入面单打印；处置路径仅两条——复称后放行，或转异常工单由主管判定。</div>
+        </section>
+
+        <section class="card" aria-labelledby="h-intercept">
+          <div class="section-head">
+            <h2 id="h-intercept">称重拦截与偏差预警</h2>
+            <span class="hint">今日 23 次 · 演示数据</span>
+          </div>
+          <div class="alert-list">
+            <div class="alert">
+              <div class="alert-body">
+                <div class="alert-title"><span class="badge b-err">强制拦截</span> OUT-20261011-3603 偏差 +18.3%</div>
+                <div class="alert-meta">SKU-88231 便携式榨汁杯 450ml · 预估 2.40kg / 实称 2.84kg · 已自动转异常工单 GD-20261011-0451</div>
+              </div>
+              <span class="alert-time">14:26</span>
+            </div>
+            <div class="alert">
+              <div class="alert-body">
+                <div class="alert-title"><span class="badge b-wait">同向预警</span> SKU-88231 近 3 单偏差同向</div>
+                <div class="alert-meta">深圳致远电子 TN-00041 · +5.6% / +4.9% / +5.2% 累计 15.7% · 建议核对商品维护重量</div>
+              </div>
+              <span class="alert-time">13:58</span>
+            </div>
+            <div class="alert">
+              <div class="alert-body">
+                <div class="alert-title"><span class="badge b-ing">复称放行</span> OUT-20261011-3609 复称后放行</div>
+                <div class="alert-meta">中山灯饰照明 TN-00123 · 二次称重 7.71kg · 偏差回落至 +1.4% · 已重新计入运费试算</div>
+              </div>
+              <span class="alert-time">12:41</span>
+            </div>
+            <div class="alert">
+              <div class="alert-body">
+                <div class="alert-title"><span class="badge b-done">运费回写</span> 称重数据回写运单运费试算</div>
+                <div class="alert-meta">今日回写 1,284 单 · 运费修正 37 单 · 差异合计 $86.40</div>
+              </div>
+              <span class="alert-time">11:20</span>
+            </div>
+          </div>
+          <button class="btn btn-sm" type="button" style="width:100%;margin-top:10px" data-toast="异常工单列表已打开 · 今日 23 条 · 演示数据">查看全部异常工单</button>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+</body>
+</html>

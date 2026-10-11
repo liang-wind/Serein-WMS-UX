@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>商品主数据 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="products">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">商品主数据<span>货主维度 SKU · 单位换算 · 材积重量 · 成本价</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- ============ KPI ============ -->
+      <section aria-label="商品主数据关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">商品总数</div>
+            <div class="kpi-value num">3,108<span class="unit">货主 SKU 条目</span></div>
+            <div class="kpi-delta">去重后唯一 SKU <b>2,914</b> 个 · <b>168</b> 个被多货主共用</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">启用中</div>
+            <div class="kpi-value num">2,742<span class="unit">条</span></div>
+            <div class="kpi-delta">占比 88.2% · 已停用 <b>348</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">待审核</div>
+            <div class="kpi-value num">18<span class="unit">条</span></div>
+            <div class="kpi-delta">新建待审 <b>12</b> · 变更待审 <b>6</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">无货主绑定</div>
+            <div class="kpi-value num text-warning">9<span class="unit">条</span></div>
+            <div class="kpi-delta">库存无法分账 · 计费无法归属</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ 工具栏 ============ -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-tenant">货主</label>
+          <select id="f-tenant" class="ctl" data-filter-col="2"><option>全部货主</option><option>TN-00041 深圳致远电子</option><option>TN-00058 乐歌家居科技</option><option>TN-00073 安克创新科技</option><option>TN-00086 义乌恒发家居</option><option>TN-00094 宁波海诚日用</option><option>TN-00102 泉州鞋业外贸</option><option>TN-00108 东莞精工五金</option><option>TN-00115 苏州明达玩具</option><option>TN-00123 中山灯饰照明</option><option>未绑定货主</option></select>
+        </div>
+        <div class="field">
+          <label for="f-cat">品类</label>
+          <select id="f-cat" class="ctl" data-filter-col="3"><option>全部品类</option><option>3C 电子</option><option>家居日用</option><option>服饰鞋包</option><option>玩具母婴</option></select>
+        </div>
+        <div class="field">
+          <label for="f-st">管理状态</label>
+          <select id="f-st" class="ctl" data-filter-col="11"><option>全部</option><option>启用中</option><option>待审核</option><option>已停用</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="SKU / 商品名 / 货主" data-filter-col="0,1,2">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-toast="商品主数据导出任务已创建 · 3,108 条将按货主分文件生成（演示数据）">导出</button>
+        <button class="btn btn-primary" type="button" data-toast="新建商品向导已打开 · 默认带出必填项：货主、主单位、箱规、长宽高、材积、毛重、单位成本">新建商品</button>
+      </div>
+
+      <!-- ============ 商品主数据列表（整宽主表） ============ -->
+      <section class="card" aria-labelledby="h-list">
+        <div class="section-head">
+          <h2 id="h-list">商品主数据列表</h2>
+          <span class="hint">共 3,108 条 · 当前展示 12 条 · 演示数据</span>
+          <span class="hint" data-result-count>3,108</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="商品管理状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">3108</span></button>
+          <button class="tab" role="tab" aria-selected="false">启用中 <span class="tab-count">2742</span></button>
+          <button class="tab" role="tab" aria-selected="false">待审核 <span class="tab-count">18</span></button>
+          <button class="tab" role="tab" aria-selected="false">已停用 <span class="tab-count">348</span></button>
+          <button class="tab" role="tab" aria-selected="false">未绑定货主 <span class="tab-count">9</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">商品主数据列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">SKU</th>
+                <th scope="col" class="sortable">商品名称 / 规格</th>
+                <th scope="col" class="sortable">货主</th>
+                <th scope="col">品类</th>
+                <th scope="col">主单位 UOM</th>
+                <th scope="col">箱规换算</th>
+                <th scope="col">长宽高 cm</th>
+                <th scope="col">材积 CBM</th>
+                <th scope="col" class="sortable">毛重 kg</th>
+                <th scope="col" class="sortable">单位成本</th>
+                <th scope="col">批次 / 效期 / 序列号</th>
+                <th scope="col">管理状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-88231 商品档案 · TN-00041 深圳致远电子 · 3C 电子 · 主单位 PCS">SKU-88231</button></td>
+                <td class="td-strong">便携式榨汁杯 450ml <span class="hint">六叶刀头 · 4000mAh</span></td>
+                <td><span class="hint num">TN-00041</span> 深圳致远电子</td>
+                <td>3C 电子</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 24 件</td>
+                <td class="td-num">9×9×23</td>
+                <td class="td-num">0.0019</td>
+                <td class="td-num">0.42</td>
+                <td class="td-num td-strong">$3.42</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-ing">效期 开</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-88231 商品档案 · TN-00041 深圳致远电子 · 3C 电子 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-88231 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-88231" data-ok="确认停用" data-toast="SKU-88231 已停用 · 已通知货主 TN-00041">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-33478 商品档案 · TN-00041 深圳致远电子 · 家居日用 · 主单位 PCS">SKU-33478</button></td>
+                <td class="td-strong">不锈钢保温杯 500ml <span class="hint">316 内胆 · 哑光黑</span></td>
+                <td><span class="hint num">TN-00041</span> 深圳致远电子</td>
+                <td>家居日用</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 36 件</td>
+                <td class="td-num">8×8×21</td>
+                <td class="td-num">0.0013</td>
+                <td class="td-num">0.38</td>
+                <td class="td-num td-strong">$4.10</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-ing">效期 开</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-33478 商品档案 · TN-00041 深圳致远电子 · 家居日用 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-33478 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-33478" data-ok="确认停用" data-toast="SKU-33478 已停用 · 已通知货主 TN-00041">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-20865 商品档案 · TN-00041 深圳致远电子 · 家居日用 · 主单位 PCS">SKU-20865</button></td>
+                <td class="td-strong">宠物自动饮水机 2.4L <span class="hint">智能循环 · 静音</span></td>
+                <td><span class="hint num">TN-00041</span> 深圳致远电子</td>
+                <td>家居日用</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 8 件</td>
+                <td class="td-num">24×24×18</td>
+                <td class="td-num">0.0104</td>
+                <td class="td-num">1.20</td>
+                <td class="td-num td-strong">$8.60</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-20865 商品档案 · TN-00041 深圳致远电子 · 家居日用 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-20865 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-20865" data-ok="确认停用" data-toast="SKU-20865 已停用 · 已通知货主 TN-00041">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-44122 商品档案 · TN-00041 深圳致远电子 · 3C 电子 · 主单位 PCS">SKU-44122</button></td>
+                <td class="td-strong">蓝牙自拍杆 三脚架款 <span class="hint">1.2m · 铝合金</span></td>
+                <td><span class="hint num">TN-00041</span> 深圳致远电子</td>
+                <td>3C 电子</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 60 件</td>
+                <td class="td-num">10×10×34</td>
+                <td class="td-num">0.0034</td>
+                <td class="td-num">0.36</td>
+                <td class="td-num td-strong">$2.75</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-44122 商品档案 · TN-00041 深圳致远电子 · 3C 电子 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-44122 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-44122" data-ok="确认停用" data-toast="SKU-44122 已停用 · 已通知货主 TN-00041">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-71904 商品档案 · TN-00086 义乌恒发家居 · 家居日用 · 主单位 PCS">SKU-71904</button></td>
+                <td class="td-strong">折叠收纳箱 66L 三件套 <span class="hint">灰白 · 含盖</span></td>
+                <td><span class="hint num">TN-00086</span> 义乌恒发家居</td>
+                <td>家居日用</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 6 件</td>
+                <td class="td-num">58×40×32</td>
+                <td class="td-num">0.0742</td>
+                <td class="td-num">2.60</td>
+                <td class="td-num td-strong">$5.80</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-71904 商品档案 · TN-00086 义乌恒发家居 · 家居日用 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-71904 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-71904" data-ok="确认停用" data-toast="SKU-71904 已停用 · 已通知货主 TN-00086">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-11708 商品档案 · TN-00086 义乌恒发家居 · 家居日用 · 主单位 PCS">SKU-11708</button></td>
+                <td class="td-strong">棉麻窗帘 200×270cm <span class="hint">亚麻色 · 半遮光</span></td>
+                <td><span class="hint num">TN-00086</span> 义乌恒发家居</td>
+                <td>家居日用</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 10 件</td>
+                <td class="td-num">40×30×28</td>
+                <td class="td-num">0.0336</td>
+                <td class="td-num">2.90</td>
+                <td class="td-num td-strong">$6.40</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-11708 商品档案 · TN-00086 义乌恒发家居 · 家居日用 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-11708 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link" type="button" data-toast="SKU-11708 效期补全向导已打开 · 需填写保质期天数与 FEFO 规则（演示数据）">补效期</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-11708" data-ok="确认停用" data-toast="SKU-11708 已停用 · 已通知货主 TN-00086">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-56012 商品档案 · TN-00108 东莞精工五金 · 3C 电子 · 主单位 PCS">SKU-56012</button></td>
+                <td class="td-strong">LED 感应夜灯 磁吸款 <span class="hint">暖光 3000K</span></td>
+                <td><span class="hint num">TN-00108</span> 东莞精工五金</td>
+                <td>3C 电子</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 100 件</td>
+                <td class="td-num text-warning">—</td>
+                <td class="td-num text-warning">—</td>
+                <td class="td-num">0.18</td>
+                <td class="td-num td-strong">$1.95</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-56012 商品档案 · TN-00108 东莞精工五金 · 3C 电子 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-56012 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link" type="button" data-toast="SKU-56012 材积补全向导已打开 · 需登记长宽高与材积（演示数据）">补材积</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-56012" data-ok="确认停用" data-toast="SKU-56012 已停用 · 已通知货主 TN-00108">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-99310 商品档案 · TN-00094 宁波海诚日用 · 服饰鞋包 · 主单位 PCS">SKU-99310</button></td>
+                <td class="td-strong">瑜伽垫 TPE 加厚 8mm <span class="hint">183×80cm · 防滑</span></td>
+                <td><span class="hint num">TN-00094</span> 宁波海诚日用</td>
+                <td>服饰鞋包</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 20 件</td>
+                <td class="td-num">60×18×18</td>
+                <td class="td-num">0.0194</td>
+                <td class="td-num">1.05</td>
+                <td class="td-num td-strong">$4.85</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-99310 商品档案 · TN-00094 宁波海诚日用 · 服饰鞋包 · 主单位 PCS">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-99310 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-99310" data-ok="确认停用" data-toast="SKU-99310 已停用 · 已通知货主 TN-00094">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-60527 商品档案 · TN-00058 乐歌家居科技 · 家居日用 · 主单位 PCS">SKU-60527</button></td>
+                <td class="td-strong">双人吊床 帆布加厚 <span class="hint">含支架 · 承重 200kg</span></td>
+                <td><span class="hint num">TN-00058</span> 乐歌家居科技</td>
+                <td>家居日用</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 12 件 · 1 托 = 240 件</td>
+                <td class="td-num">30×22×26</td>
+                <td class="td-num">0.0172</td>
+                <td class="td-num">1.85</td>
+                <td class="td-num td-strong">$7.20</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-done">启用中</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-60527 商品档案 · TN-00058 乐歌家居科技 · 家居日用 · B2B 整托出库">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-60527 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link danger" type="button" data-confirm="停用后该 SKU 不可再入库与出库，在库库存需先清空或转移。" data-title="停用 SKU-60527" data-ok="确认停用" data-toast="SKU-60527 已停用 · 已通知货主 TN-00058">停用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-82466 商品档案 · TN-00073 安克创新科技 · 3C 电子 · 序列号管理">SKU-82466</button></td>
+                <td class="td-strong">磁吸充电宝 10000mAh <span class="hint">PD 20W · 锂电</span></td>
+                <td><span class="hint num">TN-00073</span> 安克创新科技</td>
+                <td>3C 电子</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 100 件</td>
+                <td class="td-num">11×7×3</td>
+                <td class="td-num">0.0002</td>
+                <td class="td-num">0.22</td>
+                <td class="td-num td-strong">$12.40</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-ing">序列号 开</span></td>
+                <td><span class="badge b-wait">待审核</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-82466 商品档案 · TN-00073 安克创新科技 · 3C 电子 · 序列号逐件追溯">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-82466 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link" type="button" data-confirm="通过后该 SKU 方可入库、上架与计费；锂电池危险品资料需同步备案。" data-title="审核 SKU-82466" data-ok="通过审核" data-toast="SKU-82466 审核通过 · 已启用 · 锂电池资质待航司备案">审核</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-35219 商品档案 · TN-00115 苏州明达玩具 · 玩具母婴 · 主单位 PCS">SKU-35219</button></td>
+                <td class="td-strong">儿童早教积木 120 片 <span class="hint">EPP 软胶 · 3 岁+</span></td>
+                <td><span class="hint num">TN-00115</span> 苏州明达玩具</td>
+                <td>玩具母婴</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 24 件</td>
+                <td class="td-num">32×24×8</td>
+                <td class="td-num">0.0061</td>
+                <td class="td-num">1.20</td>
+                <td class="td-num td-strong">$9.80</td>
+                <td><span class="badge b-done">批次 开</span> <span class="badge b-neutral">效期 关</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-neutral">已停用</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-35219 商品档案 · TN-00115 苏州明达玩具 · 玩具母婴 · 已停用">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-35219 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link" type="button" data-confirm="启用后恢复入库与出库，请确认计量与档案字段已补全。" data-title="启用 SKU-35219" data-ok="确认启用" data-toast="SKU-35219 已启用 · 已通知货主 TN-00115">启用</button>
+                </td>
+              </tr>
+              <tr>
+                <td><button class="td-link td-num" type="button" data-toast="SKU-90712 商品档案 · 未绑定货主 · 家居日用 · 待补全货主归属">SKU-90712</button></td>
+                <td class="td-strong">硅胶保鲜盖 6 件套 <span class="hint">食品级 · 可加热</span></td>
+                <td><span class="badge b-wait">未绑定货主</span></td>
+                <td>家居日用</td>
+                <td class="td-num">PCS</td>
+                <td class="td-num">1 箱 = 100 件</td>
+                <td class="td-num">18×14×6</td>
+                <td class="td-num">0.0015</td>
+                <td class="td-num">0.30</td>
+                <td class="td-num td-strong">$2.30</td>
+                <td><span class="badge b-neutral">批次 关</span> <span class="badge b-ing">效期 开</span> <span class="badge b-neutral">序列号 关</span></td>
+                <td><span class="badge b-wait">待审核</span></td>
+                <td class="td-ops">
+                  <button class="btn-link" type="button" data-toast="SKU-90712 商品档案 · 未绑定货主 · 家居日用 · 保质期 540 天">档案</button>
+                  <button class="btn-link" type="button" data-toast="编辑 SKU-90712 主数据 · 变更将记入审计日志">编辑</button>
+                  <button class="btn-link" type="button" data-toast="SKU-90712 货主绑定面板已打开 · 未绑定前不计入任何货主账期（演示数据）">绑定货主</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>每页 20 条 · 第 1 / 156 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button">2</button>
+          <button class="page-btn" type="button">3</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <!-- ============ 规范说明（左右分栏） ============ -->
+      <div class="table-grid">
+
+        <section class="card" aria-labelledby="h-uom">
+          <div class="section-head">
+            <h2 id="h-uom">计量与换算 · UOM 体系</h2>
+            <span class="hint">PCS / 箱 / 托盘</span>
+          </div>
+
+          <dl class="dl" style="margin-top:10px">
+            <dt>主单位（唯一直存）</dt><dd>PCS · 件</dd>
+            <dt>包装单位</dt><dd>箱 CTN · 按箱规折算</dd>
+            <dt>作业单位</dt><dd>托盘 PLT · 整托出入</dd>
+            <dt>重量口径</dt><dd>毛重 GW · 含包装</dd>
+            <dt>材积口径</dt><dd>CBM · 单件外箱</dd>
+          </dl>
+
+          <div class="check-list" style="margin-top:10px">
+            <div class="check">
+              <input type="checkbox" id="u1" checked>
+              <div class="check-body">
+                <label class="check-title" for="u1">库存与账务只认件数</label>
+                <div class="check-help">箱、托盘是包装与作业单位，收货与发货按「箱数 × 箱规」折算为件数入账</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="u2" checked>
+              <div class="check-body">
+                <label class="check-title" for="u2">换算率随商品档案维护</label>
+                <div class="check-help">1 托盘 = N 箱 = M 件逐级乘算；修改后只影响新单，历史单据不回改</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="u3" checked>
+              <div class="check-body">
+                <label class="check-title" for="u3">运费与仓租按件数 + 材积重量试算</label>
+                <div class="check-help">材积重 = CBM × 167，取实重与材积重较大者；仓租按占用体积分档</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="note-box" style="margin-top:12px">长宽高、材积、毛重缺失时，运费试算只能回退到默认重，仓租也无法按体积分档——计量字段不齐，库存成本与货主账单都算不准。</div>
+        </section>
+
+        <section class="card" aria-labelledby="h-field">
+          <div class="section-head">
+            <h2 id="h-field">商品档案字段规范</h2>
+            <span class="hint">必填 10 项 · 选填 8 项 · 演示数据</span>
+          </div>
+
+          <dl class="dl" style="margin-top:10px">
+            <dt>必填 · 标识</dt><dd>SKU 编码 / 品名 / 货主 / 品类</dd>
+            <dt>必填 · 计量</dt><dd>主单位 / 箱规 / 长宽高 / 材积 / 毛重</dd>
+            <dt>必填 · 成本</dt><dd>单位成本（按货主维度）</dd>
+            <dt>选填 · 条码</dt><dd>EAN / UPC · PDA 扫码依据</dd>
+            <dt>选填 · HTS 编码</dt><dd>进口清关申报口径</dd>
+            <dt>选填 · 申报货值</dt><dd>关税估算与破损理赔</dd>
+            <dt>选填 · 保质期天数</dt><dd>效期商品 FEFO 前置条件</dd>
+            <dt>选填 · 序列号管理</dt><dd>逐件追溯 · 高价值 3C 必开</dd>
+            <dt>选填 · 批次管理</dt><dd>效期商品默认必开</dd>
+            <dt>选填 · 效期管理</dt><dd>开启后方可按 FEFO 分配</dd>
+            <dt>选填 · 危险品标识</dt><dd>锂电池 / 液体 / 磁化类</dd>
+          </dl>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-sm" type="button" style="flex:1" data-toast="字段模板已同步至 9 家货主 · 新建商品默认带出必填项">字段模板</button>
+            <button class="btn btn-sm btn-primary" type="button" style="flex:1" data-toast="批量补全任务已下发 · 3 个 SKU 待补材积、效期与货主归属（演示数据）">批量补全</button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ============ 待补全主数据告警（整宽） ============ -->
+      <section class="card" aria-labelledby="h-miss">
+        <div class="section-head">
+          <h2 id="h-miss">待补全主数据告警</h2>
+          <span class="hint">阻塞运费试算 / FEFO / 空运交货 · 演示数据</span>
+        </div>
+
+        <div class="alert-list" style="margin-top:6px">
+          <div class="alert sev-high">
+            <span class="badge b-err">阻塞</span>
+            <div class="alert-body">
+              <div class="alert-title">SKU-56012 未填写材积，运费试算不可用</div>
+              <div class="alert-meta">TN-00108 东莞精工五金 · 3C 电子 · 长宽高为空，材积重无法计算，影响 BHX-03 18 个待出库订单</div>
+            </div>
+            <span class="alert-time">3d</span>
+          </div>
+          <div class="alert sev-high">
+            <span class="badge b-err">阻塞</span>
+            <div class="alert-body">
+              <div class="alert-title">SKU-82466 未登记危险品标识，空运交货单将被航司拒收</div>
+              <div class="alert-meta">TN-00073 安克创新科技 · 3C 电子 · 含锂电池 10000mAh，缺 MSDS 与 UN38.3 文件</div>
+            </div>
+            <span class="alert-time">1d</span>
+          </div>
+          <div class="alert sev-mid">
+            <span class="badge b-wait">预警</span>
+            <div class="alert-body">
+              <div class="alert-title">SKU-11708 未设定效期，无法 FEFO</div>
+              <div class="alert-meta">TN-00086 义乌恒发家居 · 家居日用 · 出库只能退回 FIFO，临期批次无法优先分配</div>
+            </div>
+            <span class="alert-time">6d</span>
+          </div>
+          <div class="alert sev-low">
+            <span class="badge b-ing">提示</span>
+            <div class="alert-body">
+              <div class="alert-title">9 个 SKU 未绑定货主，库存无法分账、计费无法归属</div>
+              <div class="alert-meta">含 SKU-90712 · 批量导入时货主列留空，需逐条补绑到 9 家货主名下</div>
+            </div>
+            <span class="alert-time">今天</span>
+          </div>
+        </div>
+
+        <div class="note-box info" style="margin-top:12px">主数据是计费与 FEFO 的地基：货主缺失，库存无法分账、仓租与操作费无法归属；效期与批次缺失，出库只能退回 FIFO；材积与毛重缺失，运费只能按默认重估算。任一缺口都会在月底对账时放大成货主异议。</div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+</body>
+</html>

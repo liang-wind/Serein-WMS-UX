@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>打印中心 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="print">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">打印中心<span>打印队列 · 打印机状态 · 模板管理</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="打印关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>今日打印任务</div>
+            <div class="kpi-value num" data-kpi="total:printJob">10</div>
+            <div class="kpi-delta">箱唛 2 · 面单 3 · 拣货单 2 · 条码 1 · FBA 1 · 发票 1</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>排队中</div>
+            <div class="kpi-value num" data-kpi="count:printJob.queued">2</div>
+            <div class="kpi-delta">等待空闲设备 · 联查设备状态 <b>5</b> 台</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>失败待重打</div>
+            <div class="kpi-value num text-danger" data-kpi="count:printJob.failed">2</div>
+            <div class="kpi-delta">自动重试 2 次后转异常工单 <b>2</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>打印机在线率</div>
+            <div class="kpi-value num" id="kpi-printer-rate">80<span class="unit">%</span></div>
+            <div class="kpi-delta" id="kpi-printer-rate-delta">可用 4 / 5 台 · 缺纸 1 · 离线 1</div>
+          </article>
+        </div>
+        <p class="hint" style="margin:2px 2px 0">以上为演示数据 · 任务号规则 PJ-YYYYMMDD-序号 · 设备编号规则 LP-仓码-序号</p>
+      </section>
+
+      <!-- 工具栏：只服务「打印任务队列」主表 -->
+      <div class="toolbar" aria-label="打印任务筛选工具栏">
+        <div class="field">
+          <label for="f-tpl">模板类型</label>
+          <select id="f-tpl" class="ctl" data-filter-col="1"><option>全部模板</option><option>箱唛</option><option>尾程面单</option><option>拣货单</option><option>商品条码标签</option><option>FBA 箱唛</option><option>发票</option></select>
+        </div>
+        <div class="field">
+          <label for="f-wh">仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="4"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-status">状态</label>
+          <select id="f-status" class="ctl" data-filter-col="10"><option>全部状态</option><option>排队中</option><option>打印中</option><option>已完成</option><option>失败</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="任务号 / 关联单据 / 货主 / 提交人" data-filter-col="0,2,3,7">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-export="打印任务队列">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出
+        </button>
+        <button class="btn btn-primary" type="button" data-confirm="将对当前「失败」状态的打印任务统一重打：每项尝试次数 +1，成功后在队列中标记为已完成；若目标打印机仍不可用，将再次进入失败并转异常工单。" data-title="重打全部失败任务" data-ok="确认重打" data-danger data-action="printJob:*:retryAll">重打全部失败</button>
+      </div>
+
+      <!-- 打印任务队列（主表） -->
+      <section class="card" aria-labelledby="h-queue">
+        <div class="section-head">
+          <h2 id="h-queue">打印任务队列</h2>
+          <span class="hint" data-count-src="printJob">共 10 条</span>
+          <span class="hint">补打会新建任务并留痕 · 演示数据</span>
+          <button class="btn btn-primary btn-sm" type="button" data-action="printJob:*:create" style="margin-left:auto">新建打印任务</button>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="打印任务状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">10</span></button>
+          <button class="tab" role="tab" aria-selected="false">排队中 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">打印中 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">已完成 <span class="tab-count">4</span></button>
+          <button class="tab" role="tab" aria-selected="false">失败 <span class="tab-count">2</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">打印任务队列列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">任务号</th>
+                <th scope="col">模板类型</th>
+                <th scope="col">关联单据</th>
+                <th scope="col">货主</th>
+                <th scope="col">仓库</th>
+                <th scope="col">份数</th>
+                <th scope="col">目标打印机</th>
+                <th scope="col">提交人</th>
+                <th scope="col" class="sortable">提交时间</th>
+                <th scope="col" class="sortable">尝试次数</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="printJob"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>每页 20 条 · 第 1 / 1 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" disabled aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <!-- 打印机状态 + 设备负载 -->
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-printer">
+          <div class="section-head">
+            <h2 id="h-printer">打印机状态</h2>
+            <span class="hint" data-count-src="printer">共 5 台</span>
+            <span class="hint">纸张余量 &lt; 20% 转缺纸 · 演示数据</span>
+          </div>
+          <div class="table-wrap" style="margin-top:6px">
+            <table id="printer-table">
+              <caption class="skip-link">打印机设备状态列表</caption>
+              <thead>
+                <tr>
+                  <th scope="col">设备编码</th>
+                  <th scope="col">位置仓库</th>
+                  <th scope="col">类型</th>
+                  <th scope="col">纸张余量</th>
+                  <th scope="col" class="sortable">今日打印量</th>
+                  <th scope="col">当前任务</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody data-render="printer"></tbody>
+            </table>
+          </div>
+          <div class="note-box" style="margin-top:10px">缺纸与离线仅阻断使用，不阻断流程：面单类任务可改派至同仓备用打印机后继续，箱唛类必须等纸张就位，避免贴错箱序。</div>
+        </section>
+
+        <section class="card" aria-labelledby="h-load">
+          <div class="section-head">
+            <h2 id="h-load">打印机今日负载</h2>
+            <span class="hint">Bullet Chart · 实际 vs 目标 70%</span>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">LP-LAX-01</span>
+              <span class="bullet-code num">标签 · 箱唛 / 条码 3 项</span>
+              <span class="bullet-pct">62%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="LP-LAX-01 负载 62%，3 项任务，目标 70%">
+              <span class="bullet-zone z-good" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+              <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+              <span class="bullet-measure" style="width:62%"></span>
+              <span class="bullet-target" style="left:70%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">LP-LAX-02</span>
+              <span class="bullet-code num">面单 / A4 · 2 项</span>
+              <span class="bullet-pct">76%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="LP-LAX-02 负载 76%，2 项任务，目标 70%">
+              <span class="bullet-zone z-good" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+              <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+              <span class="bullet-measure" style="width:76%"></span>
+              <span class="bullet-target" style="left:70%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">LP-EWR-01</span>
+              <span class="bullet-code num">面单 / A4 · 2 项</span>
+              <span class="bullet-pct">58%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="LP-EWR-01 负载 58%，2 项任务，目标 70%">
+              <span class="bullet-zone z-good" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+              <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+              <span class="bullet-measure" style="width:58%"></span>
+              <span class="bullet-target" style="left:70%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">LP-BHX-01</span>
+              <span class="bullet-code num">标签 · 2 项已完成</span>
+              <span class="bullet-pct">12%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="LP-BHX-01 负载仅 12%，缺纸导致后续任务无法输出">
+              <span class="bullet-zone z-good" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+              <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+              <span class="bullet-measure" style="width:12%"></span>
+              <span class="bullet-target" style="left:70%"></span>
+            </div>
+          </div>
+          <div class="bullet-item">
+            <div class="bullet-top">
+              <span class="bullet-name">LP-FRA-01</span>
+              <span class="bullet-code num">面单 · 1 项待重打</span>
+              <span class="bullet-pct">34%</span>
+            </div>
+            <div class="bullet-track" role="img" aria-label="LP-FRA-01 负载 34%，1 项任务因设备离线失败，目标 70%">
+              <span class="bullet-zone z-good" style="width:90%"></span>
+              <span class="bullet-zone z-mid" style="left:90%;width:8%"></span>
+              <span class="bullet-zone z-bad" style="left:98%;width:2%"></span>
+              <span class="bullet-measure" style="width:34%"></span>
+              <span class="bullet-target" style="left:70%"></span>
+            </div>
+          </div>
+          <p class="bullet-legend">
+            <span><i style="background:var(--range-good)"></i>0–90% 正常</span>
+            <span><i style="background:var(--range-mid)"></i>90–98% 偏高</span>
+            <span><i style="background:var(--range-bad)"></i>&gt;98% 过载</span>
+            <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>目标 70%</span>
+          </p>
+        </section>
+      </div>
+
+      <!-- 模板管理 + 失败原因 -->
+      <div class="table-grid">
+        <section class="card" aria-labelledby="h-tpl">
+          <div class="section-head">
+            <h2 id="h-tpl">模板管理</h2>
+            <span class="hint">6 类模板 · 字段构成</span>
+          </div>
+          <dl class="dl" style="margin-top:10px">
+            <dt>箱唛</dt>
+            <dd class="num">仓码 + ASN 号 + 箱序 / 总箱数 + 货主 + SKU + 数量 + 批次<span class="hint"> · 100×100mm 标签打印机</span></dd>
+            <dt>尾程面单</dt>
+            <dd class="num">运单号 + 收发件人 + 重量 + 服务类型 + 面单账号<span class="hint"> · 100×150mm 面单打印机</span></dd>
+            <dt>拣货单</dt>
+            <dd class="num">库位 + SKU + 品名 + 数量 + 货主 + 批次 + 拣货人 + 波次<span class="hint"> · A4 打印机</span></dd>
+            <dt>商品条码标签</dt>
+            <dd class="num">SKU + 品名 + 条码 + 库位 + FNSKU + 批次<span class="hint"> · 50×30mm 标签打印机</span></dd>
+            <dt>FBA 箱唛</dt>
+            <dd class="num">仓码 + Shipment ID + 箱序 / 总箱数 + FNSKU + 亚马逊仓编码<span class="hint"> · 100×100mm 标签打印机</span></dd>
+            <dt>发票</dt>
+            <dd class="num">账单号 + 货主 + 账期 + 明细笔数 + 金额 + 税率 + 备注<span class="hint"> · A4 打印机</span></dd>
+          </dl>
+          <div class="note-box info" style="margin-top:10px">模板按「模板 + 尺寸 + 类型」匹配设备：如箱唛 100×100（标签打印机）、尾程面单 100×150（面单打印机），尺寸与设备能力不一致时直接判失败并给出「标签格式不匹配」原因。</div>
+        </section>
+
+        <section class="card" aria-labelledby="h-reason">
+          <div class="section-head">
+            <h2 id="h-reason">打印失败原因</h2>
+            <span class="hint">今日 15 次 · 演示数据</span>
+          </div>
+          <div style="margin-top:4px">
+            <div class="slot">
+              <span class="slot-time">F-01</span>
+              <div class="slot-body">
+                <div class="slot-name">纸张用尽</div>
+                <div class="slot-sub">标签纸或碳带耗尽，集中出现在连续批量输出后</div>
+              </div>
+              <span class="slot-load text-danger">6</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">F-02</span>
+              <div class="slot-body">
+                <div class="slot-name">标签格式不匹配</div>
+                <div class="slot-sub">模板尺寸与设备 DPI / 进纸不一致，输出偏移或被截断</div>
+              </div>
+              <span class="slot-load text-warning">4</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">F-03</span>
+              <div class="slot-body">
+                <div class="slot-name">打印机离线</div>
+                <div class="slot-sub">设备断电或网络中断，任务自动转入排队中</div>
+              </div>
+              <span class="slot-load text-warning">3</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">F-04</span>
+              <div class="slot-body">
+                <div class="slot-name">面单账号余额不足</div>
+                <div class="slot-sub">承运商面单账户余额不足，无法获取运单号</div>
+              </div>
+              <span class="slot-load text-danger">2</span>
+            </div>
+          </div>
+          <div class="note-box" style="margin-top:10px">同一任务自动重试 <b>2</b> 次，仍失败则自动转异常工单并通知仓库主管；失败原因实时回写队列的「详情」抽屉，便于按原因分类处置。</div>
+        </section>
+      </div>
+
+      <div class="note-box">打印失败自动重试 2 次，仍失败则转异常工单；补打会留痕且计入审计日志。打印任务写入本地演示数据（localStorage），刷新后仍保留，可在页面上直接验证「重打」「补打」「取消」三种动作。</div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+<script src="assets/mod-print.js"></script>
+</body>
+</html>

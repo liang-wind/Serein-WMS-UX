@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>审批中心 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="approvals" data-wh-col="4">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">审批中心<span>报废确认 · 库存调整 · 盘点差异 · 账单差异 · 仓库停用</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="审批关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label">待我审批</div>
+            <div class="kpi-value num" data-kpi="count:approval.pending">5</div>
+            <div class="kpi-delta" id="kpi-pending-delta">报废 1 · 盘点 1 · 调整 1 · 账单 1 · 停用 1</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">今日已处理</div>
+            <div class="kpi-value num" id="kpi-today">3</div>
+            <div class="kpi-delta" id="kpi-today-delta">通过 2 · 驳回 1</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">平均处理时长</div>
+            <div class="kpi-value num" id="kpi-avg">1.1h</div>
+            <div class="kpi-delta">目标 ≤4h · 较上周 ↓0.4h</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">超 24h 未处理</div>
+            <div class="kpi-value num text-danger" id="kpi-over">1</div>
+            <div class="kpi-delta" id="kpi-over-delta">最久 AP-…0001 · 已等 25h18m</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-type">审批类型</label>
+          <select id="f-type" class="ctl" data-filter-col="1">
+            <option>全部类型</option>
+            <option>退件报废确认</option>
+            <option>盘点差异调整</option>
+            <option>库存调整单</option>
+            <option>账单差异调整</option>
+            <option>仓库停用</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-wh">仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="4">
+            <option>全部仓库</option>
+            <option>LAX-01</option>
+            <option>EWR-02</option>
+            <option>BHX-03</option>
+            <option>FRA-04</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-status">状态</label>
+          <select id="f-status" class="ctl" data-filter-col="10">
+            <option>全部状态</option>
+            <option>待审批</option>
+            <option>已通过</option>
+            <option>已驳回</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="审批单号 / 关联单据 / 申请人" data-filter-col="0,2,7">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-export="审批中心">导出</button>
+        <button class="btn btn-primary" type="button" data-title="批量通过" data-ok="批量通过" data-confirm="将对全部待审批单据统一执行「通过」，库存、单据与账务立即落库，操作不可撤销。" data-action="approval:*:batchApprove">
+          批量通过
+        </button>
+      </div>
+
+      <!-- 审批列表（主表） -->
+      <section class="card" aria-labelledby="h-list">
+        <div class="section-head">
+          <h2 id="h-list">审批列表</h2>
+          <span class="hint" data-count-src="approval">共 9 条</span>
+          <span class="hint">演示数据</span>
+          <span class="hint" data-result-count>9</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="审批状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">9</span></button>
+          <button class="tab" role="tab" aria-selected="false">待审批 <span class="tab-count">5</span></button>
+          <button class="tab" role="tab" aria-selected="false">已通过 <span class="tab-count">3</span></button>
+          <button class="tab" role="tab" aria-selected="false">已驳回 <span class="tab-count">1</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">审批中心单据列表</caption>
+            <thead>
+              <tr>
+                <th scope="col">审批单号</th>
+                <th scope="col">类型</th>
+                <th scope="col">关联单据</th>
+                <th scope="col">货主</th>
+                <th scope="col">仓库</th>
+                <th scope="col">SKU / 数量</th>
+                <th scope="col">影响金额</th>
+                <th scope="col">申请人</th>
+                <th scope="col">申请时间</th>
+                <th scope="col">等待时长</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody data-render="approval"></tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>共 9 条 · 每页 20 条 · 第 1 / 1 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+
+        <div class="note-box info" style="margin-top:12px">审批通过才会真正改写库存与账务（扣减可用库存、按差异调整、账单按系统金额入账、仓库置为停用）；驳回则回滚或解锁，回到申请前状态。每一次决策都会写入审计留痕，可按审批单号回溯到操作人、时间与变更内容。</div>
+      </section>
+
+      <!-- 审批类型与后果 / 审批时效 -->
+      <div class="table-grid">
+        <section class="card" aria-labelledby="h-types">
+          <div class="section-head">
+            <h2 id="h-types">审批类型与后果</h2>
+            <span class="hint">5 类 effect · 演示数据</span>
+          </div>
+          <div class="check-list" style="margin-top:4px">
+            <div class="check">
+              <input type="checkbox" id="t-scrap" checked>
+              <div class="check-body">
+                <label class="check-title" for="t-scrap">退件报废确认 <span class="hint">scrap-ret</span></label>
+                <div class="check-help">通过：按申请数量扣减可用库存，退件单置为已完成、销毁队列同步关闭。驳回：退回「待换标」决策队列，库存不变。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="t-count" checked>
+              <div class="check-body">
+                <label class="check-title" for="t-count">盘点差异调整 <span class="hint">count-diff</span></label>
+                <div class="check-help">通过：按正负差异调整 SKU 可用库存，盘点库位解锁、任务置为已完成。驳回：只解锁库位并转「待复核」，库存不动。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="t-adj" checked>
+              <div class="check-body">
+                <label class="check-title" for="t-adj">库存调整单 <span class="hint">adj</span></label>
+                <div class="check-help">通过：可用库存按调整数量增减（破损报废扣减、盘盈加回）。驳回：完全不动库存，仅留存审批结论。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="t-bill" checked>
+              <div class="check-body">
+                <label class="check-title" for="t-bill">账单差异调整 <span class="hint">bill-diff</span></label>
+                <div class="check-help">通过：账单确认金额改为系统金额、差异清零，状态转入「对账中」。驳回：账单保持差异状态，标记待二次核对。</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="t-wh" checked>
+              <div class="check-body">
+                <label class="check-title" for="t-wh">仓库停用 <span class="hint">wh-pause</span></label>
+                <div class="check-help">通过：仓库置为「已停用」，在库库存冻结，未完成作业继续执行。驳回：仓库恢复「运营中」，可重新提交申请。</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-sla">
+          <div class="section-head">
+            <h2 id="h-sla">审批时效</h2>
+            <span class="hint">近 30 天平均处理时长 vs 目标 4h · 演示数据</span>
+          </div>
+          <div style="margin-top:4px">
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">退件报废确认</span>
+                <span class="bullet-code num">6 单</span>
+                <span class="bullet-pct">2.6h</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="退件报废确认 平均处理时长 2.6 小时，低于 4 小时目标">
+                <span class="bullet-zone z-good" style="width:50%"></span>
+                <span class="bullet-zone z-mid" style="left:50%;width:25%"></span>
+                <span class="bullet-zone z-bad" style="left:75%;width:25%"></span>
+                <span class="bullet-measure" style="width:32.5%"></span>
+                <span class="bullet-target" style="left:50%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">盘点差异调整</span>
+                <span class="bullet-code num">41 单</span>
+                <span class="bullet-pct">1.8h</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="盘点差异调整 平均处理时长 1.8 小时，低于 4 小时目标">
+                <span class="bullet-zone z-good" style="width:50%"></span>
+                <span class="bullet-zone z-mid" style="left:50%;width:25%"></span>
+                <span class="bullet-zone z-bad" style="left:75%;width:25%"></span>
+                <span class="bullet-measure" style="width:22.5%"></span>
+                <span class="bullet-target" style="left:50%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">库存调整单</span>
+                <span class="bullet-code num">28 单</span>
+                <span class="bullet-pct">1.1h</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="库存调整单 平均处理时长 1.1 小时，低于 4 小时目标">
+                <span class="bullet-zone z-good" style="width:50%"></span>
+                <span class="bullet-zone z-mid" style="left:50%;width:25%"></span>
+                <span class="bullet-zone z-bad" style="left:75%;width:25%"></span>
+                <span class="bullet-measure" style="width:13.8%"></span>
+                <span class="bullet-target" style="left:50%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">账单差异调整</span>
+                <span class="bullet-code num">9 单</span>
+                <span class="bullet-pct">3.4h</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="账单差异调整 平均处理时长 3.4 小时，低于 4 小时目标">
+                <span class="bullet-zone z-good" style="width:50%"></span>
+                <span class="bullet-zone z-mid" style="left:50%;width:25%"></span>
+                <span class="bullet-zone z-bad" style="left:75%;width:25%"></span>
+                <span class="bullet-measure" style="width:42.5%"></span>
+                <span class="bullet-target" style="left:50%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">仓库停用</span>
+                <span class="bullet-code num">2 单</span>
+                <span class="bullet-pct text-warning">4.6h</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="仓库停用 平均处理时长 4.6 小时，超过 4 小时目标">
+                <span class="bullet-zone z-good" style="width:50%"></span>
+                <span class="bullet-zone z-mid" style="left:50%;width:25%"></span>
+                <span class="bullet-zone z-bad" style="left:75%;width:25%"></span>
+                <span class="bullet-measure" style="width:57.5%"></span>
+                <span class="bullet-target" style="left:50%"></span>
+              </div>
+            </div>
+          </div>
+          <p class="bullet-legend">
+            <span><i style="background:var(--range-good);width:50%"></i>≤4h 达标</span>
+            <span><i style="background:var(--range-mid)"></i>4–6h 关注</span>
+            <span><i style="background:var(--range-bad)"></i>&gt;6h 超时</span>
+            <span><i style="background:var(--color-foreground);width:3px;height:12px;border-radius:0"></i>目标 4h</span>
+          </p>
+        </section>
+      </div>
+
+      <!-- 审批流程 / 超时未处理 -->
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-flow">
+          <div class="section-head">
+            <h2 id="h-flow">审批流程</h2>
+            <span class="hint">申请 → 待确认态 → 排队 → 决策 → 落库或回滚 → 通知 · 演示数据</span>
+          </div>
+          <div class="stepper" style="margin-top:10px">
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">申请 · 作业端发起</div>
+                <div class="step-meta">退件、库存、盘点、计费页提交报废 / 调整 / 差异申请 · 本页 9 单</div>
+              </div>
+            </div>
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">单据进入待确认态</div>
+                <div class="step-meta">关联单据停在「待确认」，作业按钮不再空转，不会走死</div>
+              </div>
+            </div>
+            <div class="step active">
+              <span class="step-dot" aria-hidden="true">3</span>
+              <div class="step-body">
+                <div class="step-title">审批中心排队</div>
+                <div class="step-meta">按 SLA 24h 计时，超时升级催办并标红等待时长</div>
+              </div>
+            </div>
+            <div class="step pending">
+              <span class="step-dot" aria-hidden="true">4</span>
+              <div class="step-body">
+                <div class="step-title">通过 / 驳回决策</div>
+                <div class="step-meta">列表、抽屉内均可决策，也可一键批量通过</div>
+              </div>
+            </div>
+            <div class="step pending">
+              <span class="step-dot" aria-hidden="true">5</span>
+              <div class="step-body">
+                <div class="step-title">落库或回滚</div>
+                <div class="step-meta">通过立即改库存与账务；驳回回滚或解锁到申请前状态</div>
+              </div>
+            </div>
+            <div class="step pending">
+              <span class="step-dot" aria-hidden="true">6</span>
+              <div class="step-body">
+                <div class="step-title">通知申请人与留痕</div>
+                <div class="step-meta">推送通知并写入审计日志，可按审批单号回溯</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-timeout">
+          <div class="section-head">
+            <h2 id="h-timeout">超时未处理</h2>
+            <span class="hint" id="timeout-count">3 单待跟进</span>
+          </div>
+          <div class="alert-list" id="timeout-list" style="margin-top:4px" aria-label="等待超过 4 小时的审批单">
+            <div class="alert sev-high">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">AP-20261011-0001 退件报废确认 已等 25h18m · 超 24h</div>
+                <div class="alert-meta">RTN-20261011-0192 · 苏州明达玩具 · FRA-04 · SKU-11708 × 36</div>
+              </div>
+              <span class="alert-time">25h18m</span>
+            </div>
+            <div class="alert sev-mid">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">AP-20261011-0005 账单差异调整 已等 19h</div>
+                <div class="alert-meta">INV-202610-0038 · 乐歌家居科技 · BHX-03</div>
+              </div>
+              <span class="alert-time">19h</span>
+            </div>
+            <div class="alert sev-low">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              <div class="alert-body">
+                <div class="alert-title">AP-20261011-0004 库存调整单 已等 6h42m</div>
+                <div class="alert-meta">ADJ-20261011-0067 · 深圳致远电子 · LAX-01 · SKU-88231 × 2</div>
+              </div>
+              <span class="alert-time">6h42m</span>
+            </div>
+          </div>
+          <div class="note-box" style="margin-top:10px">SLA 24h：超时后每 2h 催办一次并升级至主管；仓库停用类审批影响收货与出库，建议当日闭环。</div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+<script src="assets/mod-approval.js"></script>
+</body>
+</html>

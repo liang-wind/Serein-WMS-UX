@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>出库发货 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="outbound" data-wh-col="3">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">出库发货<span>波次 · 拣货 · 打包 · 交接</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <section aria-label="出库关键指标">
+        <div class="kpi-grid">
+          <article class="card kpi">
+            <div class="kpi-label">待拣货</div>
+            <div class="kpi-value num" data-kpi="count:out.waiting">118</div>
+            <div class="kpi-delta">波次 6 个 · 最早 SLA <b>15:00</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">拣货中</div>
+            <div class="kpi-value num" data-kpi="count:out.picking">18</div>
+            <div class="kpi-delta">平均完成度 <b>54%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">今日已发运</div>
+            <div class="kpi-value num">3,572</div>
+            <div class="kpi-delta">较昨日 <b class="up">↑ 6.8%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">准时发运率</div>
+            <div class="kpi-value num">96.2<span class="unit">%</span></div>
+            <div class="kpi-delta">目标 98% · <b class="down">↓ 1.8%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">异常件</div>
+            <div class="kpi-value num text-danger">7</div>
+            <div class="kpi-delta">缺货 3 · 地址 2 · 轨迹 2</div>
+          </article>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-wh">仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="3"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-tenant">货主</label>
+          <select id="f-tenant" class="ctl" data-filter-col="2"><option>全部货主</option><option>深圳致远电子</option><option>义乌恒发家居</option><option>安克创新科技</option><option>乐歌家居科技</option><option>苏州明达玩具</option><option>中山灯饰照明</option></select>
+        </div>
+        <div class="field">
+          <label for="f-ch">销售渠道</label>
+          <select id="f-ch" class="ctl" data-filter-col="1"><option>全部渠道</option><option>Amazon</option><option>Shopify</option><option>eBay</option><option>Temu</option></select>
+        </div>
+        <div class="field">
+          <label for="f-car">承运商</label>
+          <select id="f-car" class="ctl" data-filter-col="4"><option>全部承运商</option><option>UPS</option><option>FedEx</option><option>DHL</option><option>Royal Mail</option><option>Colissimo</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="出库单号 / 运单号" data-filter-col="0,4">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-form="wave">生成波次</button>
+        <button class="btn btn-primary" type="button" data-form="batchlabel">批量打单</button>
+      </div>
+
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-list">
+          <div class="section-head">
+            <h2 id="h-list">出库单列表</h2>
+            <span class="hint" data-count-src="out">共 214 条</span>
+            <span class="hint" data-result-count>214</span>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="出库单状态筛选" style="margin-top:6px">
+            <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">214</span></button>
+            <button class="tab" role="tab" aria-selected="false">待拣货 <span class="tab-count">118</span></button>
+            <button class="tab" role="tab" aria-selected="false">拣货中 <span class="tab-count">18</span></button>
+            <button class="tab" role="tab" aria-selected="false">待打包 <span class="tab-count">12</span></button>
+            <button class="tab" role="tab" aria-selected="false">待发运 <span class="tab-count">59</span></button>
+            <button class="tab" role="tab" aria-selected="false">异常 <span class="tab-count">7</span></button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:8px">
+            <table>
+              <caption class="skip-link">出库单列表</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sortable">出库单号</th>
+                  <th scope="col">渠道</th>
+                  <th scope="col">货主</th>
+                  <th scope="col">仓库</th>
+                  <th scope="col">承运商</th>
+                  <th scope="col">运单号</th>
+                  <th scope="col" class="sortable">件数</th>
+                  <th scope="col">SLA</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody data-render="out"></tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>每页 20 条 · 第 1 / 11 页</span>
+            <span class="spacer"></span>
+            <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+            <button class="page-btn" type="button" aria-current="page">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <section class="card" aria-labelledby="h-wave">
+            <div class="section-head">
+              <h2 id="h-wave">进行中的波次</h2>
+              <span class="hint">3</span>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">W-20261011-007</span>
+                <span class="bullet-code">LAX-01 · 42 单</span>
+                <span class="bullet-pct">72%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="波次 W-20261011-007 完成度 72%">
+                <span class="bullet-zone z-good" style="left:0;width:100%;background:var(--color-muted)"></span>
+                <span class="bullet-measure" style="width:72%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">W-20261011-006</span>
+                <span class="bullet-code">EWR-02 · 31 单</span>
+                <span class="bullet-pct">45%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="波次 W-20261011-006 完成度 45%">
+                <span class="bullet-zone z-good" style="left:0;width:100%;background:var(--color-muted)"></span>
+                <span class="bullet-measure" style="width:45%"></span>
+              </div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">W-20261011-005</span>
+                <span class="bullet-code">BHX-03 · 18 单</span>
+                <span class="bullet-pct">12%</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="波次 W-20261011-005 完成度 12%">
+                <span class="bullet-zone z-good" style="left:0;width:100%;background:var(--color-muted)"></span>
+                <span class="bullet-measure" style="width:12%"></span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm" type="button" style="flex:1" data-list="wave">波次看板</button>
+              <button class="btn btn-sm" type="button" data-confirm="关闭波次后剩余订单将退回待拣货池。" data-title="关闭波次" data-ok="关闭" data-danger data-action="wave:W-20261011-005:close">关闭波次</button>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="h-carrier">
+            <div class="section-head">
+              <h2 id="h-carrier">承运商交接进度</h2>
+              <span class="hint">今日</span>
+            </div>
+            <div style="margin-top:4px">
+              <div class="slot">
+                <span class="slot-time">11:00</span>
+                <div class="slot-body">
+                  <div class="slot-name">UPS · 首趟揽收</div>
+                  <div class="slot-sub">LAX-01 · 1,204 件</div>
+                </div>
+                <span class="slot-load text-success">已交接</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">14:30</span>
+                <div class="slot-body">
+                  <div class="slot-name">FedEx · 第二趟</div>
+                  <div class="slot-sub">LAX-01 · 862 件</div>
+                </div>
+                <span class="slot-load text-success">已交接</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">17:00</span>
+                <div class="slot-body">
+                  <div class="slot-name">UPS · 末班截单</div>
+                  <div class="slot-sub">EWR-02 · 1,506 件</div>
+                </div>
+                <span class="slot-load text-warning">备货中</span>
+              </div>
+              <div class="slot">
+                <span class="slot-time">19:30</span>
+                <div class="slot-body">
+                  <div class="slot-name">DHL · 夜间航班</div>
+                  <div class="slot-sub">FRA-04 · 248 件</div>
+                </div>
+                <span class="slot-load text-muted">待开始</span>
+              </div>
+            </div>
+            <button class="btn btn-sm" type="button" style="width:100%;margin-top:10px" data-toast="交接单已导出 PDF · 今日 4 趟">导出交接单</button>
+          </section>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>

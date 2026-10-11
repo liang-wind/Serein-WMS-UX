@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>盘点管理 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="count">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">盘点管理<span>盘点执行 · 差异比对 · 审批调整 · 账务入账</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="盘点关键指标">
+        <div class="kpi-grid kpi-grid-4">
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>本月盘点单</div>
+            <div class="kpi-value num">128</div>
+            <div class="kpi-delta">已完成 <b>94</b> · 计划外抽盘 <b>6</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>待执行</div>
+            <div class="kpi-value num">23</div>
+            <div class="kpi-delta">今日计划开始 <b>8</b> 张 · 最早 10-12</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>盘点中</div>
+            <div class="kpi-value num">11</div>
+            <div class="kpi-delta">平均耗时 <b>3.2</b> 天 · PDA 在线 5 台</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>待审批差异</div>
+            <div class="kpi-value num text-warning">9</div>
+            <div class="kpi-delta">差异金额 <b>$4,872</b> · FRA-04 占 <b>6</b> 张</div>
+          </article>
+        </div>
+        <p class="hint" style="margin:2px 2px 0">以上为演示数据 · 盘点单编号规则 CN-YYYYMMDD-序号 · 库存调整单编号规则 ADJ-YYYYMMDD-序号</p>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-mode">盘点方式</label>
+          <select id="f-mode" class="ctl" data-filter-col="0,1"><option>全部方式</option><option>明盘</option><option>盲盘</option><option>循环盘点</option><option>全盘</option></select>
+        </div>
+        <div class="field">
+          <label for="f-wh">仓库</label>
+          <select id="f-wh" class="ctl" data-filter-col="0,2"><option>全部仓库</option><option>LAX-01</option><option>EWR-02</option><option>BHX-03</option><option>FRA-04</option></select>
+        </div>
+        <div class="field">
+          <label for="f-st">状态</label>
+          <select id="f-st" class="ctl" data-filter-col="8,9"><option>全部</option><option>待执行</option><option>盘点中</option><option>待审批</option><option>已调整</option><option>已关闭</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="盘点单号 / 方式 / 库区 / 货主" data-filter-col="0,1,2,3,4,5">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-toast="盘点差异报表已导出 · 待审批 9 条 · 含差异金额与原因 · 演示数据">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出报表
+        </button>
+        <button class="btn btn-primary" type="button" data-toast="已创建盘点单 CN-20261011-019（草稿）· 默认盲盘 · 请先锁定库区再下发 PDA 任务">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          新建盘点单
+        </button>
+      </div>
+
+      <!-- 盘点单主表 -->
+      <section class="card" aria-labelledby="h-orders">
+        <div class="section-head">
+          <h2 id="h-orders">盘点单</h2>
+          <span class="hint">共 128 张 · 演示数据</span>
+          <span class="hint" data-result-count>128</span>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="盘点单状态筛选" style="margin-top:6px">
+          <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">12</span></button>
+          <button class="tab" role="tab" aria-selected="false">待执行 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">盘点中 <span class="tab-count">3</span></button>
+          <button class="tab" role="tab" aria-selected="false">待审批 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">已调整 <span class="tab-count">2</span></button>
+          <button class="tab" role="tab" aria-selected="false">已关闭 <span class="tab-count">3</span></button>
+        </div>
+
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <caption class="skip-link">盘点单列表</caption>
+            <thead>
+              <tr>
+                <th scope="col" class="sortable">盘点单号</th>
+                <th scope="col">方式</th>
+                <th scope="col">仓库</th>
+                <th scope="col">库区 / 范围</th>
+                <th scope="col">涉及货主</th>
+                <th scope="col" class="sortable">计划库位</th>
+                <th scope="col">已完成</th>
+                <th scope="col" class="sortable">差异件数</th>
+                <th scope="col">公差</th>
+                <th scope="col">状态</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261011-014</a></td>
+                <td><span class="role-tag">循环盘点</span></td>
+                <td class="num">FRA-04</td>
+                <td>D 区<div class="hint">A 级 SKU · 320 库位</div></td>
+                <td>深圳致远电子<div class="hint">TN-00041 · 1 SKU</div></td>
+                <td class="td-num">320</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-danger">-148</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-ing">盘点中</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="CN-20261011-014 已盘 320 / 320 库位 · 差异 148 件 · FRA-04 6 张差异单待复核 · AP-20261011-0002 排队中">查看进度</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-confirm="封账后将不再接受新的扫码记录，未审批的差异单继续保持库位锁定。" data-title="结束盘点" data-ok="封账" data-toast="CN-20261011-014 已封账 · 差异 148 件转差异审批 · D-02-09 锁定至审批完成">结束盘点</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261011-013</a></td>
+                <td><span class="role-tag">盲盘</span></td>
+                <td class="num">LAX-01</td>
+                <td>A 区<div class="hint">货架 1–12 排 · 480 库位</div></td>
+                <td>深圳致远电子<div class="hint">TN-00041 · 3 SKU</div></td>
+                <td class="td-num">480</td>
+                <td><div class="progress-row"><span class="progress warn" role="img" aria-label="已完成 46%"><span style="width:46%"></span></span><b>46%</b></div></td>
+                <td class="td-num text-danger">-12</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-ing">盘点中</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="CN-20261011-013 已盘 221 / 480 库位 · 用时 1.8 天 · 剩余预计 2.1 天">查看进度</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-confirm="提前结束将只比对已扫码库位，未盘库位按账面数封账。" data-title="结束盘点" data-ok="结束并比对" data-toast="CN-20261011-013 已封账 · 未盘 259 个库位按账面保留">结束盘点</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261011-012</a></td>
+                <td><span class="role-tag">明盘</span></td>
+                <td class="num">LAX-01</td>
+                <td>B 区<div class="hint">全量 · 1,240 库位</div></td>
+                <td>深圳致远电子 等<div class="hint">含乐歌家居科技 · 6 SKU</div></td>
+                <td class="td-num">1,240</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-danger">-2</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-done">已调整</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="已打开 ADJ-20261010-0031 · 关联 CN-20261011-012 · 盘亏 2 件已入账">调整单</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261011-012 盘点表已导出 · 含 1,240 个库位账实对照">导出</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261011-011</a></td>
+                <td><span class="role-tag">全盘</span></td>
+                <td class="num">EWR-02</td>
+                <td>全仓<div class="hint">停出入库 · 4,860 库位</div></td>
+                <td>全部货主<div class="hint">18 家 · 312 SKU</div></td>
+                <td class="td-num">4,860</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-success">+18</td>
+                <td class="td-num text-muted">±0.3%</td>
+                <td><span class="badge b-neutral">已关闭</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="CN-20261011-011 全盘报告 · 盘盈 18 件 · 差异率 0.37% 在公差内 · 已归档">查看报告</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-confirm="重新盘点将解锁该仓库并生成新的账面快照，历史差异记录保留。" data-title="重新盘点" data-ok="生成新盘点单" data-toast="已基于 CN-20261011-011 生成 CN-20261011-016 · 待执行">重新盘点</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261011-010</a></td>
+                <td><span class="role-tag">盲盘</span></td>
+                <td class="num">BHX-03</td>
+                <td>C 区<div class="hint">大件位 · 260 库位</div></td>
+                <td>乐歌家居科技<div class="hint">TN-00058 · 1 SKU</div></td>
+                <td class="td-num">260</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-danger">-7</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-wait">待审批</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm btn-primary" type="button" data-confirm="审批通过后将按实盘数生成库存调整单并更新账面库存，动作不可回退。" data-title="差异审批" data-ok="通过并调整" data-toast="CN-20261011-010 已审批通过 · 调整单 ADJ-20261011-0033 待记账">提交审批</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261011-010 差异 7 件 · SKU-71904 外包装破损未过账">差异明细</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261010-009</a></td>
+                <td><span class="role-tag">循环盘点</span></td>
+                <td class="num">FRA-04</td>
+                <td>A 区<div class="hint">C 级 SKU · 180 库位</div></td>
+                <td>宁波海诚日用<div class="hint">TN-00094 · 2 SKU</div></td>
+                <td class="td-num">180</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-muted">0</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-neutral">已关闭</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="CN-20261010-009 零差异 · 180 个库位账实一致 · 已归档">查看报告</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-confirm="重新盘点将解锁该库区并生成新的账面快照，历史差异记录保留。" data-title="重新盘点" data-ok="生成新盘点单" data-toast="已基于 CN-20261010-009 生成 CN-20261011-017 · 待执行">重新盘点</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261010-008</a></td>
+                <td><span class="role-tag">明盘</span></td>
+                <td class="num">LAX-01</td>
+                <td>E 区<div class="hint">暂存位 · 96 库位</div></td>
+                <td>泉州鞋业外贸<div class="hint">TN-00102 · 1 SKU</div></td>
+                <td class="td-num">96</td>
+                <td><div class="progress-row"><span class="progress" role="img" aria-label="未开始 0%"><span style="width:0%"></span></span><b>0%</b></div></td>
+                <td class="td-num text-muted">—</td>
+                <td class="td-num text-muted">±1.0%</td>
+                <td><span class="badge b-neutral">待执行</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm btn-primary" type="button" data-confirm="将固化 E 区账面快照并锁定库存，盘点期间该库区不可出库，同时向 PDA 下发 96 个库位任务。" data-title="开始盘点" data-ok="锁定并开始" data-toast="CN-20261010-008 快照已固化 · E 区库存已锁定 · PDA 任务已下发">开始盘点</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261010-008 已进入编辑 · 可调整库区范围、公差与作业人">编辑</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261010-007</a></td>
+                <td><span class="role-tag">盲盘</span></td>
+                <td class="num">EWR-02</td>
+                <td>B 区<div class="hint">拣货位 · 340 库位</div></td>
+                <td>义乌恒发家居<div class="hint">TN-00086 · 4 SKU</div></td>
+                <td class="td-num">340</td>
+                <td><div class="progress-row"><span class="progress warn" role="img" aria-label="已完成 72%"><span style="width:72%"></span></span><b>72%</b></div></td>
+                <td class="td-num text-danger">-5</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-ing">盘点中</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="CN-20261010-007 已盘 245 / 340 库位 · 用时 2.4 天 · 剩余预计 1.0 天">查看进度</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-confirm="提前结束将只比对已扫码库位，未盘库位按账面数封账。" data-title="结束盘点" data-ok="结束并比对" data-toast="CN-20261010-007 已封账 · 未盘 95 个库位按账面保留">结束盘点</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261009-006</a></td>
+                <td><span class="role-tag">循环盘点</span></td>
+                <td class="num">BHX-03</td>
+                <td>D 区<div class="hint">呆滞库存 · 120 库位</div></td>
+                <td>苏州明达玩具<div class="hint">TN-00115 · 2 SKU</div></td>
+                <td class="td-num">120</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-success">+2</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-done">已调整</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="已打开 ADJ-20261009-0018 · 关联 CN-20261009-006 · 盘盈 2 件已入账">调整单</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261009-006 盘点表已导出 · 含 120 个库位账实对照">导出</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261009-005</a></td>
+                <td><span class="role-tag">全盘</span></td>
+                <td class="num">BHX-03</td>
+                <td>全仓<div class="hint">停出入库 · 2,150 库位</div></td>
+                <td>全部货主<div class="hint">12 家 · 188 SKU</div></td>
+                <td class="td-num">2,150</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-success">+25</td>
+                <td class="td-num text-muted">±0.3%</td>
+                <td><span class="badge b-neutral">已关闭</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm" type="button" data-toast="CN-20261009-005 全盘报告 · 盘盈 25 件 · 差异率 0.30% 在公差内 · 已归档">查看报告</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-confirm="重新盘点将解锁该仓库并生成新的账面快照，历史差异记录保留。" data-title="重新盘点" data-ok="生成新盘点单" data-toast="已基于 CN-20261009-005 生成 CN-20261011-018 · 待执行">重新盘点</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261009-004</a></td>
+                <td><span class="role-tag">明盘</span></td>
+                <td class="num">FRA-04</td>
+                <td>F 区<div class="hint">退货暂存 · 88 库位</div></td>
+                <td>东莞精工五金<div class="hint">TN-00108 · 1 SKU</div></td>
+                <td class="td-num">88</td>
+                <td><div class="progress-row"><span class="progress" role="img" aria-label="未开始 0%"><span style="width:0%"></span></span><b>0%</b></div></td>
+                <td class="td-num text-muted">—</td>
+                <td class="td-num text-muted">±1.0%</td>
+                <td><span class="badge b-neutral">待执行</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm btn-primary" type="button" data-confirm="将固化 F 区账面快照并锁定库存，盘点期间该库区不可出库，同时向 PDA 下发 88 个库位任务。" data-title="开始盘点" data-ok="锁定并开始" data-toast="CN-20261009-004 快照已固化 · F 区库存已锁定 · PDA 任务已下发">开始盘点</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261009-004 已进入编辑 · 可调整库区范围、公差与作业人">编辑</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="td-strong"><a class="td-link" href="#">CN-20261008-003</a></td>
+                <td><span class="role-tag">盲盘</span></td>
+                <td class="num">LAX-01</td>
+                <td>A 区<div class="hint">高值货架 · 150 库位</div></td>
+                <td>中山灯饰照明<div class="hint">TN-00123 · 1 SKU</div></td>
+                <td class="td-num">150</td>
+                <td><div class="progress-row"><span class="progress ok" role="img" aria-label="已完成 100%"><span style="width:100%"></span></span><b>100%</b></div></td>
+                <td class="td-num text-danger">-9</td>
+                <td class="td-num text-muted">±0.5%</td>
+                <td><span class="badge b-wait">待审批</span></td>
+                <td class="td-ops">
+                  <button class="btn btn-sm btn-primary" type="button" data-confirm="审批通过后将按实盘数生成库存调整单并更新账面库存，动作不可回退。" data-title="差异审批" data-ok="通过并调整" data-toast="CN-20261008-003 已审批通过 · 调整单 ADJ-20261011-0034 待记账">提交审批</button>
+                  <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261008-003 差异 9 件 · SKU-99310 退件在途未入账">差异明细</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pager">
+          <span>每页 12 条 · 第 1 / 11 页</span>
+          <span class="spacer"></span>
+          <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+          <button class="page-btn" type="button" aria-current="page">1</button>
+          <button class="page-btn" type="button">2</button>
+          <button class="page-btn" type="button">3</button>
+          <button class="page-btn" type="button" aria-label="下一页">›</button>
+        </div>
+      </section>
+
+      <!-- 差异审批 + 公差规则 -->
+      <div class="row-2">
+        <section class="card" aria-labelledby="h-diff">
+          <div class="section-head">
+            <h2 id="h-diff">差异审批明细</h2>
+            <span class="hint">共 9 条 · 待审批 3 · 演示数据</span>
+            <button class="more btn-link" type="button" data-toast="已按差异金额降序重排 · 共 8 条">按金额排序</button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:8px">
+            <table>
+              <caption class="skip-link">盘点差异明细与审批记录</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sortable">盘点单号</th>
+                  <th scope="col">SKU / 品名</th>
+                  <th scope="col">货主</th>
+                  <th scope="col" class="sortable">账面数</th>
+                  <th scope="col">实盘数</th>
+                  <th scope="col" class="sortable">差异</th>
+                  <th scope="col" class="sortable">差异金额</th>
+                  <th scope="col">原因</th>
+                  <th scope="col">审批状态</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261011-014</a><div class="hint">循环盘点 · FRA-04 D 区</div></td>
+                  <td><span class="td-strong num">SKU-33478</span><div class="hint">不锈钢保温杯 500ml</div></td>
+                  <td>宁波海诚日用<div class="hint">TN-00094</div></td>
+                  <td class="td-num">88</td>
+                  <td class="td-num">76</td>
+                  <td class="td-num text-danger">-12</td>
+                  <td class="td-num">$33.12</td>
+                  <td>循环盘点盘亏 · 库位 D-02-09 锁定</td>
+                  <td><span class="badge b-wait">待审批</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm btn-primary" type="button" data-confirm="审批通过后按实盘数生成库存调整单并更新账面，动作不可回退。" data-title="差异审批" data-ok="审批通过" data-toast="CN-20261011-014 差异 -12 件已通过 · 调整单 ADJ-20261011-0032 待记账 · 库位 D-02-09 解锁">审批通过</button>
+                    <button class="btn-link danger" style="margin-left:4px" type="button" data-confirm="驳回后退回 PDA 二次复盘，需重新提交差异。" data-title="驳回差异" data-danger data-ok="驳回" data-toast="CN-20261011-014 差异已驳回 · 待二次复盘">驳回</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261011-013</a><div class="hint">盲盘 · LAX-01 A 区</div></td>
+                  <td><span class="td-strong num">SKU-88231</span><div class="hint">便携式榨汁杯 450ml</div></td>
+                  <td>深圳致远电子<div class="hint">TN-00041</div></td>
+                  <td class="td-num">1,180</td>
+                  <td class="td-num">1,168</td>
+                  <td class="td-num text-danger">-12</td>
+                  <td class="td-num">$41.04</td>
+                  <td>初盘差异 · 待二次复盘确认</td>
+                  <td><span class="badge b-neutral">待复核</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm" type="button" data-toast="CN-20261011-013 复核任务已下发 · 作业人：陈工 · 预计 2 小时内完成">下发复核</button>
+                    <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261011-013 已盘 221 / 480 库位 · 该差异为局部比对结果">查看进度</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261011-010</a><div class="hint">盲盘 · BHX-03 C 区</div></td>
+                  <td><span class="td-strong num">SKU-71904</span><div class="hint">折叠收纳箱 66L 三件套</div></td>
+                  <td>义乌恒发家居<div class="hint">TN-00086</div></td>
+                  <td class="td-num">430</td>
+                  <td class="td-num">423</td>
+                  <td class="td-num text-danger">-7</td>
+                  <td class="td-num">$40.60</td>
+                  <td>外包装破损未过账</td>
+                  <td><span class="badge b-wait">待审批</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm btn-primary" type="button" data-confirm="审批通过后按实盘数生成库存调整单并更新账面，动作不可回退。" data-title="差异审批" data-ok="审批通过" data-toast="CN-20261011-010 差异已通过 · 调整单 ADJ-20261011-0033 待记账">审批通过</button>
+                    <button class="btn-link danger" style="margin-left:4px" type="button" data-confirm="驳回后退回 PDA 二次复盘，需重新提交差异。" data-title="驳回差异" data-danger data-ok="驳回" data-toast="CN-20261011-010 差异已驳回 · 待二次复盘">驳回</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261008-003</a><div class="hint">盲盘 · LAX-01 A 区</div></td>
+                  <td><span class="td-strong num">SKU-99310</span><div class="hint">瑜伽垫 TPE 加厚 8mm</div></td>
+                  <td>泉州鞋业外贸<div class="hint">TN-00102</div></td>
+                  <td class="td-num">305</td>
+                  <td class="td-num">296</td>
+                  <td class="td-num text-danger">-9</td>
+                  <td class="td-num">$38.52</td>
+                  <td>退件在途未入账</td>
+                  <td><span class="badge b-wait">待审批</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm btn-primary" type="button" data-confirm="审批通过后按实盘数生成库存调整单并更新账面，动作不可回退。" data-title="差异审批" data-ok="审批通过" data-toast="CN-20261008-003 差异已通过 · 调整单 ADJ-20261011-0034 待记账">审批通过</button>
+                    <button class="btn-link danger" style="margin-left:4px" type="button" data-confirm="驳回后退回 PDA 二次复盘，需重新提交差异。" data-title="驳回差异" data-danger data-ok="驳回" data-toast="CN-20261008-003 差异已驳回 · 待二次复盘">驳回</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261011-015</a><div class="hint">动态盘点 · LAX-01 A 区</div></td>
+                  <td><span class="td-strong num">SKU-88231</span><div class="hint">便携式榨汁杯 450ml</div></td>
+                  <td>深圳致远电子<div class="hint">TN-00041</div></td>
+                  <td class="td-num">9</td>
+                  <td class="td-num">12</td>
+                  <td class="td-num text-success">+3</td>
+                  <td class="td-num">$10.26</td>
+                  <td>上架错记 · A-03-12 已解锁</td>
+                  <td><span class="badge b-done">已通过</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm" type="button" data-toast="已打开 AP-20261011-0003 · 陈工 10-11 08:40 通过 · 可用库存 9 → 12 件">审批单</button>
+                    <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261011-015 审批流水已打开 · 复核人刘主管 · 审批人陈工">审批流水</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261011-012</a><div class="hint">明盘 · LAX-01 B 区</div></td>
+                  <td><span class="td-strong num">SKU-44122</span><div class="hint">蓝牙自拍杆 三脚架款</div></td>
+                  <td>宁波海诚日用<div class="hint">TN-00094</div></td>
+                  <td class="td-num">64</td>
+                  <td class="td-num">62</td>
+                  <td class="td-num text-danger">-2</td>
+                  <td class="td-num">$4.20</td>
+                  <td>盘点少货 · ADJ-20261010-0031 已入账</td>
+                  <td><span class="badge b-done">已通过</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm" type="button" data-toast="已打开 ADJ-20261010-0031 · 关联 CN-20261011-012 · -2 件已入账">调整单</button>
+                    <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261011-012 审批流水已打开 · 复核人陈工 · 审批人王主管">审批流水</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261009-006</a><div class="hint">循环盘点 · BHX-03 D 区</div></td>
+                  <td><span class="td-strong num">SKU-11708</span><div class="hint">棉麻窗帘 200×270cm</div></td>
+                  <td>义乌恒发家居<div class="hint">TN-00086</div></td>
+                  <td class="td-num">96</td>
+                  <td class="td-num">98</td>
+                  <td class="td-num text-success">+2</td>
+                  <td class="td-num">$15.80</td>
+                  <td>收货多收未过账</td>
+                  <td><span class="badge b-done">已通过</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm" type="button" data-toast="已打开 ADJ-20261009-0018 · 关联 CN-20261009-006 · +2 件已入账">调整单</button>
+                    <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261009-006 审批流水已打开 · 复核人陈工 · 审批人王主管">审批流水</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261011-011</a><div class="hint">全盘 · EWR-02 全仓</div></td>
+                  <td><span class="td-strong num">SKU-44122</span><div class="hint">蓝牙自拍杆 三脚架款</div></td>
+                  <td>宁波海诚日用<div class="hint">TN-00094</div></td>
+                  <td class="td-num">8,240</td>
+                  <td class="td-num">8,258</td>
+                  <td class="td-num text-success">+18</td>
+                  <td class="td-num">$37.80</td>
+                  <td>移库未过账 · 差异率 0.22% 在公差内</td>
+                  <td><span class="badge b-err">已驳回</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm" type="button" data-confirm="重新提交后将生成新的差异复核任务，需再次审批。" data-title="重新提交差异" data-ok="提交复核" data-toast="CN-20261011-011 差异已重新提交复核 · 48 小时内需处理">重新提交</button>
+                    <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261011-011 驳回理由：差异率未超全盘公差 ±0.3%，不做账务调整">驳回理由</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-strong"><a class="td-link" href="#">CN-20261009-005</a><div class="hint">全盘 · BHX-03 全仓</div></td>
+                  <td><span class="td-strong num">SKU-20865</span><div class="hint">宠物自动饮水机 2.4L</div></td>
+                  <td>宁波海诚日用<div class="hint">TN-00094</div></td>
+                  <td class="td-num">8,420</td>
+                  <td class="td-num">8,445</td>
+                  <td class="td-num text-success">+25</td>
+                  <td class="td-num">$153.75</td>
+                  <td>移库在途 · 差异率 0.30% 在公差内</td>
+                  <td><span class="badge b-err">已驳回</span></td>
+                  <td class="td-ops">
+                    <button class="btn btn-sm" type="button" data-confirm="重新提交后将生成新的差异复核任务，需再次审批。" data-title="重新提交差异" data-ok="提交复核" data-toast="CN-20261009-005 差异已重新提交复核 · 48 小时内需处理">重新提交</button>
+                    <button class="btn-link" style="margin-left:4px" type="button" data-toast="CN-20261009-005 驳回理由：差异率未超全盘公差 ±0.3%，不做账务调整">驳回理由</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>每页 20 条 · 第 1 / 1 页</span>
+            <span class="spacer"></span>
+            <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+            <button class="page-btn" type="button" aria-current="page">1</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="h-tol">
+          <div class="section-head">
+            <h2 id="h-tol">公差与库存锁定规则</h2>
+            <span class="hint">5 仓统一</span>
+          </div>
+          <dl class="dl" style="margin-top:8px">
+            <dt>默认公差</dt><dd class="num">±0.5%</dd>
+            <dt>全盘公差</dt><dd class="num">±0.3%</dd>
+            <dt>单 SKU 差异上限</dt><dd class="num">50 件</dd>
+            <dt>差异金额审批线</dt><dd class="num">$500</dd>
+            <dt>复核时限</dt><dd class="num">48 小时</dd>
+            <dt>超公差处置</dt><dd>人工复核 + 货主确认</dd>
+          </dl>
+          <div style="margin-top:10px">
+            <div class="slot">
+              <span class="slot-time">锁定</span>
+              <div class="slot-body">
+                <div class="slot-name">快照固化即占用可用库存</div>
+                <div class="slot-sub">出库 / 移库 / 调拨单据自动拦截</div>
+              </div>
+              <span class="slot-load text-warning">不可出库</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">例外</span>
+              <div class="slot-body">
+                <div class="slot-name">紧急出库需仓经理授权</div>
+                <div class="slot-sub">逐单审批 · 全程留痕</div>
+              </div>
+              <span class="slot-load text-muted">人工放行</span>
+            </div>
+            <div class="slot">
+              <span class="slot-time">解锁</span>
+              <div class="slot-body">
+                <div class="slot-name">差异审批完成后自动释放</div>
+                <div class="slot-sub">已入账库位恢复可出库</div>
+              </div>
+              <span class="slot-load text-success">自动</span>
+            </div>
+          </div>
+          <div class="note-box info" style="margin-top:12px">差异率在公差内的可直接封账；超出公差、单 SKU 差异超过 50 件或差异金额超过 $500 的，必须人工复核并货主确认后才能生成调整单，超 48 小时未处理自动升级至运营经理。</div>
+        </section>
+      </div>
+
+      <!-- 执行流程 + 盘点方式说明 -->
+      <div class="table-grid">
+        <section class="card" aria-labelledby="h-flow">
+          <div class="section-head">
+            <h2 id="h-flow">盘点执行流程</h2>
+            <span class="hint num">CN-20261011-014</span>
+          </div>
+          <div class="stepper" style="margin-top:10px">
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">快照锁定</div>
+                <div class="step-meta">10-11 09:58 · D-02-09 88 件转入 quarantine · 库存锁定不可出库</div>
+              </div>
+            </div>
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">PDA 扫码盘点</div>
+                <div class="step-meta">10-11 16:20 · 320 / 320 库位已扫码 · 作业人王运营</div>
+              </div>
+            </div>
+            <div class="step done">
+              <span class="step-dot" aria-hidden="true">✓</span>
+              <div class="step-body">
+                <div class="step-title">系统比对</div>
+                <div class="step-meta">10-11 16:35 · 差异 148 件 · 6 张差异单待复核</div>
+              </div>
+            </div>
+            <div class="step active">
+              <span class="step-dot" aria-hidden="true">4</span>
+              <div class="step-body">
+                <div class="step-title">差异复核</div>
+                <div class="step-meta">10-11 16:50 · 实盘复核完成 · D-02-09 盘亏 12 件待审批</div>
+              </div>
+            </div>
+            <div class="step pending">
+              <span class="step-dot" aria-hidden="true">5</span>
+              <div class="step-body">
+                <div class="step-title">审批调整</div>
+                <div class="step-meta">AP-20261011-0002 排队中 · SLA 24h · 通过后生成 ADJ 调整单</div>
+              </div>
+            </div>
+            <div class="step pending">
+              <span class="step-dot" aria-hidden="true">6</span>
+              <div class="step-body">
+                <div class="step-title">账务入账</div>
+                <div class="step-meta">待入账 · 通过后解锁库位并更新账面与库存成本</div>
+              </div>
+            </div>
+          </div>
+          <div class="note-box info" style="margin-top:12px">盘点期间库存锁定不可出库：快照固化后，涉及库位的可用库存即被占用，出库 / 移库 / 调拨单据自动拦截。该规则与系统设置「夜间自动盘点」开关联动 —— 当前为关闭状态，开启后每日 02:00 对 A 区自动生成循环盘点单并下发 PDA 任务。</div>
+        </section>
+
+        <section class="card" aria-labelledby="h-mode">
+          <div class="section-head">
+            <h2 id="h-mode">盘点方式说明</h2>
+            <span class="hint">4 种</span>
+          </div>
+          <div class="check-list" style="margin-top:4px">
+            <div class="check">
+              <input type="checkbox" id="m1" checked>
+              <div class="check-body">
+                <label class="check-title" for="m1">明盘</label>
+                <div class="check-help">PDA 同时显示账面数与库位，照着核；适合高值、序列号商品抽盘与月度抽检</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="m2" checked>
+              <div class="check-body">
+                <label class="check-title" for="m2">盲盘</label>
+                <div class="check-help">不显示账面数，先盘后比对，防止照单念数；循环盘点默认方式</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="m3" checked>
+              <div class="check-body">
+                <label class="check-title" for="m3">循环盘点</label>
+                <div class="check-help">按 ABC 分级设定频率（A 类每周 / B 类每月 / C 类每季），只盘分区不全仓</div>
+              </div>
+            </div>
+            <div class="check">
+              <input type="checkbox" id="m4" checked>
+              <div class="check-body">
+                <label class="check-title" for="m4">全盘</label>
+                <div class="check-help">停出入库、锁定全仓一次性盘清；用于季末 / 年度财务对账，需提前 3 天通知货主</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-sm" type="button" style="width:100%;margin-top:10px" data-toast="ABC 分级规则：近 90 天动销频次 × 货值综合排序 · A 类 120 SKU / B 类 860 SKU / C 类 11,867 SKU">查看 ABC 分级</button>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+</body>
+</html>

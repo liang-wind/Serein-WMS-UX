@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>订单中心 · 海外仓 WMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/wms.css">
+</head>
+<body data-page="orders" data-wh-col="5">
+<a class="skip-link" href="#main">跳转到主要内容</a>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h1 class="page-title">订单中心<span>渠道接入 · 库存预占 · 自动分仓</span></h1>
+      <div id="topbar-actions"></div>
+    </header>
+
+    <main id="main" class="content">
+
+      <!-- KPI -->
+      <section aria-label="订单关键指标">
+        <div class="kpi-grid">
+          <article class="card kpi">
+            <div class="kpi-label">今日订单</div>
+            <div class="kpi-value num">6,842</div>
+            <div class="kpi-delta">渠道 <b>7</b> 个 · 货主 <b>18</b> 家</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">待分仓</div>
+            <div class="kpi-value num" data-kpi="count:order.assign">146</div>
+            <div class="kpi-delta">最早 SLA <b>15:00</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">已预占</div>
+            <div class="kpi-value num" data-kpi="count:order.held">6,412</div>
+            <div class="kpi-delta">锁定库存 <b>8,940</b> 件</div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">自动分仓率</div>
+            <div class="kpi-value num">93.7<span class="unit">%</span></div>
+            <div class="kpi-delta">目标 95% · <b class="down">↓ 1.3%</b></div>
+          </article>
+          <article class="card kpi">
+            <div class="kpi-label">缺货拦截</div>
+            <div class="kpi-value num text-danger" data-kpi="count:order.block">284</div>
+            <div class="kpi-delta">超卖拦截 <b class="up">291</b> 单</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="field">
+          <label for="f-tenant">货主</label>
+          <select id="f-tenant" class="ctl" data-filter-col="2"><option>全部货主</option><option>安克创新科技</option><option>深圳致远电子</option><option>乐歌家居科技</option><option>义乌恒发家居</option></select>
+        </div>
+        <div class="field">
+          <label for="f-ch">渠道</label>
+          <select id="f-ch" class="ctl" data-filter-col="1"><option>全部渠道</option><option>Amazon</option><option>Shopify</option><option>eBay</option><option>Temu</option></select>
+        </div>
+        <div class="field">
+          <label for="f-st">订单状态</label>
+          <select id="f-st" class="ctl" data-filter-col="6"><option>全部</option><option>待分仓</option><option>已预占</option><option>缺货拦截</option><option>已下发</option></select>
+        </div>
+        <div class="field">
+          <label for="f-kw">关键字</label>
+          <input id="f-kw" class="ctl" type="search" placeholder="平台订单号 / SKU / 收件人" data-filter-col="0,3">
+        </div>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-reset>重置</button>
+        <button class="btn" type="button" data-action="oms:*:pull">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          拉取订单
+        </button>
+        <button class="btn btn-primary" type="button" data-confirm="将对筛选出的全部待分仓订单执行自动分仓与库存预占，动作不可回退。" data-title="批量分仓" data-ok="开始分仓" data-action="oms:*:assign">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          批量分仓
+        </button>
+      </div>
+
+      <div class="row-2">
+        <!-- 订单池 -->
+        <section class="card" aria-labelledby="h-list">
+          <div class="section-head">
+            <h2 id="h-list">订单池</h2>
+            <span class="hint" data-count-src="order">共 6,842 条 · 演示数据</span>
+            <span class="hint" data-result-count>6,842</span>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="订单状态筛选" style="margin-top:6px">
+            <button class="tab" role="tab" aria-selected="true">全部 <span class="tab-count">6842</span></button>
+            <button class="tab" role="tab" aria-selected="false">待分仓 <span class="tab-count">146</span></button>
+            <button class="tab" role="tab" aria-selected="false">已预占 <span class="tab-count">6412</span></button>
+            <button class="tab" role="tab" aria-selected="false">缺货拦截 <span class="tab-count">284</span></button>
+            <button class="tab" role="tab" aria-selected="false">已下发 <span class="tab-count">6128</span></button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:8px">
+            <table>
+              <caption class="skip-link">订单池列表</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="sortable">平台订单号</th>
+                  <th scope="col">渠道</th>
+                  <th scope="col">货主</th>
+                  <th scope="col">SKU / 件数</th>
+                  <th scope="col">收货地</th>
+                  <th scope="col">分仓结果</th>
+                  <th scope="col">状态</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody data-render="order"></tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>每页 20 条 · 第 1 / 343 页</span>
+            <span class="spacer"></span>
+            <button class="page-btn" type="button" disabled aria-label="上一页">‹</button>
+            <button class="page-btn" type="button" aria-current="page">1</button>
+            <button class="page-btn" type="button">2</button>
+            <button class="page-btn" type="button">3</button>
+            <button class="page-btn" type="button" aria-label="下一页">›</button>
+          </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:var(--grid-gap)">
+          <!-- 分仓决策 -->
+          <section class="card" aria-labelledby="h-decide">
+            <div class="section-head">
+              <h2 id="h-decide">自动分仓决策链</h2>
+              <span class="hint num">AMZ-114-982731</span>
+            </div>
+            <div class="stepper" style="margin-top:10px">
+              <div class="step done">
+                <span class="step-dot" aria-hidden="true">✓</span>
+                <div class="step-body">
+                  <div class="step-title">渠道拉单与去重</div>
+                  <div class="step-meta">10-11 09:41 · Amazon SP-API · 重复单 0</div>
+                </div>
+              </div>
+              <div class="step done">
+                <span class="step-dot" aria-hidden="true">✓</span>
+                <div class="step-body">
+                  <div class="step-title">地址解析与清洗</div>
+                  <div class="step-meta">US-CA 90012 · 已验证可投递</div>
+                </div>
+              </div>
+              <div class="step active">
+                <span class="step-dot" aria-hidden="true">3</span>
+                <div class="step-body">
+                  <div class="step-title">可用库存匹配</div>
+                  <div class="step-meta">LAX 128 · EWR 96 · BHX 12 · FRA 0</div>
+                </div>
+              </div>
+              <div class="step pending">
+                <span class="step-dot" aria-hidden="true">4</span>
+                <div class="step-body">
+                  <div class="step-title">分仓评分</div>
+                  <div class="step-meta">就近 98 · 时效 91 · 成本 88 → LAX-01</div>
+                </div>
+              </div>
+              <div class="step pending">
+                <span class="step-dot" aria-hidden="true">5</span>
+                <div class="step-body">
+                  <div class="step-title">预占锁库</div>
+                  <div class="step-meta">待锁定 3 件 · 预占有效期 30 分钟</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-sm" type="button" style="flex:1" data-toast="已切换为人工指定仓库模式 · 需仓库主管权限">人工指定</button>
+              <button class="btn btn-sm btn-primary" type="button" data-toast="AMZ-114-982731 已按评分结果预占 LAX-01 · 3 件">执行预占</button>
+            </div>
+          </section>
+
+          <!-- 分仓规则 -->
+          <section class="card" aria-labelledby="h-rule">
+            <div class="section-head">
+              <h2 id="h-rule">分仓规则</h2>
+              <span class="hint">按优先级命中</span>
+            </div>
+            <div class="table-wrap" style="margin-top:4px">
+              <table>
+                <caption class="skip-link">分仓规则优先级列表</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">优先级</th>
+                    <th scope="col">规则</th>
+                    <th scope="col">命中</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="td-num">1</td>
+                    <td>渠道指定仓（Amazon FBA）</td>
+                    <td class="td-num">1,204</td>
+                  </tr>
+                  <tr>
+                    <td class="td-num">2</td>
+                    <td>就近 + 时效最优</td>
+                    <td class="td-num">5,318</td>
+                  </tr>
+                  <tr>
+                    <td class="td-num">3</td>
+                    <td>库存深度兜底</td>
+                    <td class="td-num">214</td>
+                  </tr>
+                  <tr>
+                    <td class="td-num">4</td>
+                    <td>单仓发货优先（禁拆单）</td>
+                    <td class="td-num">106</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-sm" type="button" style="width:100%;margin-top:10px" data-toast="分仓规则配置面板已打开（演示环境）">配置规则</button>
+          </section>
+
+          <!-- 预占用量 -->
+          <section class="card" aria-labelledby="h-hold">
+            <div class="section-head">
+              <h2 id="h-hold">预占与超卖拦截</h2>
+              <span class="hint">今日</span>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-top">
+                <span class="bullet-name">已预占件数</span>
+                <span class="bullet-code num">6,412 单</span>
+                <span class="bullet-pct">8,940</span>
+              </div>
+              <div class="bullet-track" role="img" aria-label="已预占件数 8940，占当日订单件数 71%">
+                <span class="bullet-zone z-good" style="left:0;width:100%;background:var(--color-muted)"></span>
+                <span class="bullet-measure" style="width:71%"></span>
+              </div>
+            </div>
+            <div class="alert-list" style="margin-top:10px">
+              <div class="alert sev-mid">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <div class="alert-body">
+                  <div class="alert-title">291 单触发超卖拦截</div>
+                  <div class="alert-meta">可用量不足时拒绝下单占用 · 已回写渠道端</div>
+                </div>
+                <span class="alert-time">今日</span>
+              </div>
+              <div class="alert sev-low">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16h.01"/><path d="M12 8v4"/></svg>
+                <div class="alert-body">
+                  <div class="alert-title">42 单预占超时未释放</div>
+                  <div class="alert-meta">超过 30 分钟未下发 · 已自动退回库存池</div>
+                </div>
+                <span class="alert-time">12m</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 异常订单 -->
+      <section class="card" aria-labelledby="h-exc">
+        <div class="section-head">
+          <h2 id="h-exc">待处置异常订单</h2>
+          <span class="hint num">6</span>
+          <a class="more" href="#">全部 284</a>
+        </div>
+        <div class="alert-list" style="margin-top:4px">
+          <div class="alert sev-high">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">SKU-71904 全仓可用量为 0</div>
+              <div class="alert-meta">义乌恒发家居 · 影响 34 单 · 建议补货或渠道端下架</div>
+            </div>
+            <button class="btn-link danger" type="button" data-confirm="SKU-71904 在 4 个仓库可用量均为 0，将通知货主补货并向渠道端建议下架。" data-title="处理缺货" data-ok="通知货主" data-action="order:SHP-7721-0093:nostock">处理</button>
+          </div>
+          <div class="alert sev-mid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">8 单收件地址缺门牌号</div>
+              <div class="alert-meta">涉及 Amazon 6 单 · Shopify 2 单 · 已推送货主客服</div>
+            </div>
+            <button class="btn-link" type="button" data-toast="已推送 8 单地址异常至对应货主客服 · 待回填">推送</button>
+          </div>
+          <div class="alert sev-mid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">3 单检测为重复订单</div>
+              <div class="alert-meta">同一买家 10 分钟内重复下单 · 已自动合并预占</div>
+            </div>
+            <button class="btn-link" type="button" data-toast="3 单重复订单已合并 · 释放多余预占 5 件">合并</button>
+          </div>
+          <div class="alert sev-low">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16h.01"/><path d="M12 8v4"/></svg>
+            <div class="alert-body">
+              <div class="alert-title">Amazon Token 将于 2 天后过期</div>
+              <div class="alert-meta">影响拉单与库存回传 · 需重新授权</div>
+            </div>
+            <button class="btn-link" type="button" data-toast="已生成 Amazon 重新授权链接 · 有效期 24 小时">授权</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/shell.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/actions.js"></script>
+</body>
+</html>
